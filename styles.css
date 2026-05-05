@@ -1,0 +1,818 @@
+/* 基础样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #2c3e50;     /* 北师大蓝深色 */
+    --secondary-color: #3498db;   /* 科技蓝 */
+    --accent-color: #e74c3c;      /* 强调色 */
+    --success-color: #2ecc71;     /* 成功绿 */
+    --warning-color: #f39c12;     /* 警告黄 */
+    --light-bg: #f8f9fa;          /* 浅灰背景 */
+    --dark-text: #2c3e50;         /* 深色文字 */
+    --light-text: #7f8c8d;        /* 浅色文字 */
+    --border-color: #e0e0e0;      /* 边框色 */
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--dark-text);
+    background-color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 顶部导航栏 */
+.header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #1a252f 100%);
+    color: white;
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: white;
+}
+
+.logo-icon {
+    font-size: 2rem;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.logo-subtext {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.main-nav {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: var(--transition);
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* 页面内容 */
+.main-content {
+    flex: 1;
+    max-width: 2000px;
+    width: 100%;
+    margin: 2rem auto;
+    padding: 0 2rem;
+}
+
+/* 内容加载容器 */
+.content-container {
+    background: white;
+    border-radius: 50px;
+    padding: 2.5rem;
+    box-shadow: var(--card-shadow);
+    margin: 2rem 0rem 2rem 8rem;
+}
+
+.content-loading {
+    text-align: center;
+    padding: 3rem;
+    color: var(--light-text);
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--light-bg);
+    border-top: 3px solid var(--secondary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 编辑工具栏 */
+.edit-toolbar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: var(--light-bg);
+    border-radius: 8px;
+    align-items: center;
+}
+
+.edit-btn {
+    padding: 0.5rem 1.5rem;
+    background: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.edit-btn:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+}
+
+.edit-btn.save-btn {
+    background: var(--success-color);
+}
+
+.edit-btn.save-btn:hover {
+    background: #27ae60;
+}
+
+.edit-status {
+    margin-left: auto;
+    color: var(--light-text);
+    font-size: 0.9rem;
+}
+
+/* 编辑器样式 */
+.content-editor {
+    width: 100%;
+    min-height: 300px;
+    padding: 1.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: vertical;
+    transition: var(--transition);
+}
+
+.content-editor:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* 时间轴组件 */
+.timeline-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: var(--card-shadow);
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--light-bg);
+}
+
+.timeline-title {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.timeline-add-btn {
+    padding: 0.5rem 1.5rem;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.timeline-add-btn:hover {
+    background: #c0392b;
+    transform: translateY(-1px);
+}
+
+.timeline-container {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline-container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--secondary-color), var(--accent-color));
+}
+
+.timeline-item {
+    background: var(--light-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    border-left: 4px solid var(--secondary-color);
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2.5rem;
+    top: 1.5rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--secondary-color);
+    border: 3px solid white;
+    box-shadow: 0 0 0 3px var(--secondary-color);
+}
+
+.timeline-date {
+    color: var(--accent-color);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-content {
+    color: var(--dark-text);
+    line-height: 1.6;
+}
+
+/* 评论系统 */
+.comment-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: var(--card-shadow);
+}
+
+.comment-input {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.comment-author-select {
+    padding: 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+.comment-textarea {
+    flex: 1;
+    padding: 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.comment-submit-btn {
+    padding: 0.8rem 2rem;
+    background: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.comment-submit-btn:hover {
+    background: #2980b9;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.comment-item {
+    background: var(--light-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.comment-time {
+    color: var(--light-text);
+    font-size: 0.9rem;
+}
+
+.comment-content {
+    color: var(--dark-text);
+    line-height: 1.6;
+}
+
+/* 页脚 */
+.footer {
+    background: var(--primary-color);
+    color: white;
+    padding: 2rem 0;
+    margin-top: 3rem;
+}
+
+.footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-info {
+    opacity: 0.8;
+}
+
+.footer-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.footer-link {
+    color: white;
+    text-decoration: none;
+    opacity: 0.8;
+    transition: var(--transition);
+}
+
+.footer-link:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+/* 纸张样式 - iGEM Wiki模板风格 */
+.paper {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    min-height: 600px;
+    margin: 40px auto;
+    padding: 60px;
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 0 0 4px #d4cde9, 
+                0 0 0 8px #fff, 
+                0 0 0 10px #d4cde9,
+                0 20px 60px rgba(0, 0, 0, 0.15);
+    overflow: visible;
+}
+
+.paper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(90deg, 
+        #d4cde9 0%, 
+        #a99ad3 25%, 
+        #d4cde9 50%, 
+        #a99ad3 75%, 
+        #d4cde9 100%);
+    border-radius: 20px 20px 0 0;
+}
+
+/* 标题样式 */
+.paper h2 {
+    color: #2c5f2d;
+    font-size: 3em;
+    margin-bottom: 40px;
+    text-align: center;
+    font-family: 'Arima Madurai', sans-serif;
+    font-weight: 800;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.paper h3 {
+    color: #5f792d;
+    font-size: 2.2em;
+    margin-top: 50px;
+    margin-bottom: 20px;
+    font-family: 'Arima Madurai', sans-serif;
+    font-weight: 600;
+}
+
+.paper h4 {
+    color: #2d5f79;
+    font-size: 1.8em;
+    margin-top: 40px;
+    margin-bottom: 15px;
+    font-family: 'Arima Madurai', sans-serif;
+    font-weight: 600;
+}
+
+.paper h5 {
+    color: #5f2d79;
+    font-size: 1.5em;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    font-family: 'Arima Madurai', sans-serif;
+    font-weight: 600;
+}
+
+.paper h6 {
+    color: #792d5f;
+    font-size: 1.2em;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-family: 'Arima Madurai', sans-serif;
+    font-weight: 600;
+}
+
+/* 顶部装饰线 */
+.paper::before {
+    content: '';
+    position: relative;
+    display: block;
+    height: 5px;
+    background-color: #d2c7ef;
+    border-radius: 5px;
+    z-index: -1;
+}
+
+/* 段落样式 */
+.paper p {
+    color: #333;
+    font-family: 'Crimson Text', normal, sans-serif;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    text-indent: 0;
+    font-size: 1.5em;
+    text-align: justify;
+    text-align-last: left;
+}
+
+/* 强调文本样式 */
+.paper .strong {
+    font-weight: bold;
+    color: #2c5f2d;
+}
+
+.paper .strong:hover {
+    color: #444;
+    text-decoration: underline;
+}
+
+/* 引用样式 */
+.paper .reference {
+    position: relative;
+    width: 100%;
+    min-height: 150px;
+    background-color: #a99ad3;
+    border-radius: 20px;
+    margin: 40px auto 80px;
+    padding: 80px;
+    padding-top: 90px;
+}
+
+.paper .reference::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border-radius: 15px;
+    background-color: #a99ad3;
+    box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+.paper .reference .left_top_corner,
+.paper .reference .right_top_corner,
+.paper .reference .left_bottom_corner,
+.paper .reference .right_bottom_corner {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 1;
+}
+
+.paper .reference .left_top_corner {
+    top: 25px;
+    left: 25px;
+    background-image: url('https://static.igem.wiki/teams/5858/images/template/left-top-box.webp');
+}
+
+.paper .reference .right_top_corner {
+    top: 25px;
+    right: 25px;
+    background-image: url('https://static.igem.wiki/teams/5858/images/template/right-top-box.webp');
+}
+
+.paper .reference .left_bottom_corner {
+    bottom: 25px;
+    left: 25px;
+    background-image: url('https://static.igem.wiki/teams/5858/images/template/left-bottom-box.webp');
+}
+
+.paper .reference .right_bottom_corner {
+    bottom: 25px;
+    right: 25px;
+    background-image: url('https://static.igem.wiki/teams/5858/images/template/right-bottom-box.webp');
+}
+
+.paper .reference .reference_title {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background-image: url('https://static.igem.wiki/teams/5858/images/template/references.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    z-index: 1;
+}
+
+.paper .reference::after {
+    content: '';
+    position: absolute;
+    bottom: -25px;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background-color: #d4cde9;
+    border-radius: 20px;
+    z-index: -3;
+    border-top: 1px solid #a99ad3;
+    border-bottom: 1px solid #a99ad3;
+}
+
+.paper .reference .line {
+    position: absolute;
+    height: 1.5px;
+    width: 90%;
+    background-color: #a99ad3;
+    z-index: -2;
+}
+
+.paper .reference .top-line {
+    left: 7%;
+    bottom: -10px;
+}
+
+.paper .reference .bottom-line {
+    left: 4%;
+    bottom: -18px;
+}
+
+.paper .reference p {
+    position: relative;
+    z-index: 2;
+    color: #fff;
+    font-size: 1.2em;
+    line-height: 1.6;
+    text-indent: 0;
+}
+
+.paper .referlink {
+    color: #acb2ef;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.paper .referlink:hover {
+    color: #b28dd7;
+    text-decoration: underline;
+}
+
+.paper .reference a {
+    color: #fff;
+}
+
+.paper .reference a:hover {
+    text-decoration: underline;
+}
+
+/* 图片样式 */
+.paper img {
+    max-width: 80%;
+    height: auto;
+    display: block;
+    margin: 20px auto;
+}
+
+.paper .figure-caption {
+    display: block;
+    text-align: center;
+    font-size: 1.4em;
+    color: #555;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    text-align-last: center;
+    font-weight: 600;
+}
+
+/* 图片容器样式 */
+.content-image-container {
+    margin: 2rem 0;
+    text-align: center;
+}
+
+.content-image {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.content-image-caption {
+    margin-top: 1rem;
+    font-style: italic;
+    color: #666;
+    font-size: 1.1em;
+    padding: 0.5rem 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.content-image-error {
+    color: #dc3545;
+    border: 2px dashed #dc3545;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* 图片插入按钮样式 */
+.image-insert-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-left: 0.5rem;
+}
+
+.image-insert-btn:hover {
+    background: #218838;
+}
+
+/* 导入Google字体 */
+@import url('https://fonts.googleapis.com/css2?family=Arima+Madurai:wght@400;600;800;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+/* 格式选择工具栏 */
+.format-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: var(--light-bg);
+    border-radius: 6px;
+    flex-wrap: wrap;
+}
+
+.format-btn {
+    padding: 0.4rem 0.8rem;
+    background: white;
+    color: var(--dark-text);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.format-btn:hover {
+    background: var(--light-bg);
+    border-color: var(--secondary-color);
+}
+
+.format-btn.active {
+    background: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+}
+
+/* 纸张模式切换 */
+.paper-mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    color: var(--light-text);
+    font-size: 0.9rem;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: var(--secondary-color);
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .format-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .paper-mode-toggle {
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+}

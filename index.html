@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北师珠iGEM Wiki - 智能合成生物学平台</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧬</text></svg>">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <a href="#" class="logo">
+                <span class="logo-icon">🧬</span>
+                <div>
+                    <div class="logo-text">BNU-iGEM</div>
+                    <div class="logo-subtext">智能合成生物学平台</div>
+                </div>
+            </a>
+            <nav class="main-nav">
+                <a href="#" class="nav-link active" data-page="project">项目总览</a>
+                <a href="#" class="nav-link" data-page="team">团队介绍</a>
+                <a href="#" class="nav-link" data-page="model">模型设计</a>
+                <a href="#" class="nav-link" data-page="lab">实验室</a>
+                <a href="#" class="nav-link" data-page="human">人文实践</a>
+                <a href="#" class="nav-link" data-page="parts">标准部件</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="content-loading" id="contentLoading">
+            <div class="loading-spinner"></div>
+            <p>正在加载内容...</p>
+        </div>
+        <div class="content-container" id="wikiContent">
+        </div>
+
+        <div id="editorContainer" style="display:none;">
+            <div class="format-toolbar" id="formatToolbar" style="display:none;">
+                <button class="format-btn" data-format="h2">标题2</button>
+                <button class="format-btn" data-format="h3">标题3</button>
+                <button class="format-btn" data-format="h4">标题4</button>
+                <button class="format-btn" data-format="h5">标题5</button>
+                <button class="format-btn" data-format="h6">标题6</button>
+                <button class="format-btn" data-format="strong">强调</button>
+                <button class="format-btn" data-format="reference">引用</button>
+                <button class="format-btn" data-format="img">图片</button>
+                <button class="format-btn" data-format="ul">列表</button>
+                <button class="format-btn" data-format="latex-inline">行内LaTeX</button>
+                <button class="format-btn" data-format="latex-block">块级LaTeX</button>
+                <button class="image-insert-btn" id="insertImageBtn">插入图片语法</button>
+                <div class="paper-mode-toggle">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="paperModeToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span>纸张模式</span>
+                </div>
+            </div>
+            <textarea id="contentEditor" class="content-editor" placeholder="在此输入内容..."></textarea>
+            <div style="margin-top:1rem; display:flex; gap:1rem;">
+                <button id="saveContentBtn" class="edit-btn save-btn" style="display:none;">保存</button>
+                <button id="cancelEditBtn" class="edit-btn" style="display:none; background:#95a5a6;">取消</button>
+                <span id="editStatus" class="edit-status"></span>
+            </div>
+        </div>
+
+        <section class="timeline-section" id="timelineSection" style="display:none;">
+            <div class="timeline-header">
+                <h2 class="timeline-title">📅 项目时间轴</h2>
+                <button class="timeline-add-btn" id="addTimelineBtn">添加事件</button>
+            </div>
+            <div class="timeline-container" id="timelineContainer"></div>
+        </section>
+
+        <section class="comment-section" id="commentSection" style="display:none;">
+            <h2 style="margin-bottom:1.5rem; color:var(--primary-color);">💬 留言板</h2>
+            <div class="comment-input">
+                <select id="commentAuthor" class="comment-author-select">
+                    <option value="匿名用户">匿名用户</option>
+                    <option value="团队成员">团队成员</option>
+                    <option value="指导老师">指导老师</option>
+                </select>
+                <textarea id="commentText" class="comment-textarea" placeholder="请输入留言内容..."></textarea>
+                <button id="commentSubmitBtn" class="comment-submit-btn">发布</button>
+            </div>
+            <div class="comments-list" id="commentsList"></div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-info">
+                <p>© 2024 BNU-iGEM Team. All Rights Reserved.</p>
+                <p>北京师范大学珠海分校 | 智能合成生物学平台</p>
+            </div>
+            <div class="footer-links">
+                <a href="https://igem.org" target="_blank" class="footer-link">iGEM官网</a>
+                <a href="https://competition.igem.org" target="_blank" class="footer-link">竞赛信息</a>
+                <a href="#" class="footer-link">关于我们</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="markdown.js"></script>
+    <script src="images.js"></script>
+    <script src="social.js"></script>
+    <script src="core.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
