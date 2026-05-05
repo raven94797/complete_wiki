@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北师珠iGEM Wiki - 智能合成生物学平台</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧬</text></svg>">
+    <!-- MathJax 支持 -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #2c3e50;     /* 北师大蓝深色 */
+            --secondary-color: #3498db;   /* 科技蓝 */
+            --accent-color: #e74c3c;      /* 强调色 */
+            --success-color: #2ecc71;     /* 成功绿 */
+            --warning-color: #f39c12;     /* 警告黄 */
+            --light-bg: #f8f9fa;          /* 浅灰背景 */
+            --dark-text: #2c3e50;         /* 深色文字 */
+            --light-text: #7f8c8d;        /* 浅色文字 */
+            --border-color: #e0e0e0;      /* 边框色 */
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-text);
+            background-color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 顶部导航栏 */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1a252f 100%);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: white;
+        }
+        
+        .logo-icon {
+            font-size: 2rem;
+        }
+        
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .logo-subtext {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .main-nav {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        /* 页面内容 */
+        .main-content {
+            flex: 1;
+            max-width: 2000px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+    
+        /* 内容加载容器 */
+        .content-container {
+            background: white;
+            border-radius: 50px;
+            padding: 2.5rem;
+            box-shadow: var(--card-shadow);
+            margin: 2rem 0rem 2rem 8rem;
+        }
+        
+        .content-loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--light-text);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--light-bg);
+            border-top: 3px solid var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 编辑工具栏 */
+        .edit-toolbar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--light-bg);
+            border-radius: 8px;
+            align-items: center;
+        }
+        
+        .edit-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .edit-btn:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+        
+        .edit-btn.save-btn {
+            background: var(--success-color);
+        }
+        
+        .edit-btn.save-btn:hover {
+            background: #27ae60;
+        }
+        
+        .edit-status {
+            margin-left: auto;
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+        
+        /* 编辑器样式 */
+        .content-editor {
+            width: 100%;
+            min-height: 300px;
+            padding: 1.5rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            resize: vertical;
+            transition: var(--transition);
+        }
+        
+        .content-editor:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        /* 时间轴组件 */
+        .timeline-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--light-bg);
+        }
+        
+        .timeline-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .timeline-add-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .timeline-add-btn:hover {
+            background: #c0392b;
+            transform: translateY(-1px);
+        }
+        
+        .timeline-container {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--secondary-color), var(--accent-color));
+        }
+        
+        .timeline-item {
+            background: var(--light-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.5rem;
+            top: 1.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--secondary-color);
+        }
+        
+        .timeline-date {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .timeline-content {
+            color: var(--dark-text);
+        }
+        
+        /* 评论系统 */
+        .comment-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .comment-input {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .comment-author-select {
+            padding: 0.5rem;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            background: white;
+        }
+        
+        .comment-textarea {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .comment-submit-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            align-self: flex-end;
+        }
+        
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .comment-item {
+            background: var(--light-bg);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .comment-time {
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+        
+        /* 页脚 */
+        .footer {
+            background: var(--primary-color);
+            color: white;
+            padding: 2rem 0;
+            margin-top: auto;
+        }
+        
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .footer-link {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+        
+        .footer-link:hover {
+            opacity: 1;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 0 1rem;
+            }
+            
+            .main-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .main-content {
+                padding: 0 1rem;
+            }
+            
+            .content-container {
+                padding: 1.5rem;
+            }
+            
+            .edit-toolbar {
+                flex-wrap: wrap;
+            }
+            
+            .edit-status {
+                margin-left: 0;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .footer-container {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+        
+        /* 暗色模式支持 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary-color: #34495e;
+                --secondary-color: #3498db;
+                --accent-color: #e74c3c;
+                --light-bg: #2c3e50;
+                --dark-text: #ecf0f1;
+                --light-text: #bdc3c7;
+                --border-color: #34495e;
+            }
+            
+            body {
+                background: #1a252f;
+            }
+            
+            .content-container,
+            .timeline-section,
+            .comment-section {
+                background: var(--primary-color);
+            }
+            
+            .content-editor {
+                background: #2c3e50;
+                color: var(--dark-text);
+                border-color: var(--border-color);
+            }
+            
+            .timeline-item {
+                background: #34495e;
+            }
+        }
+        
+        /* ==================== 从description抄来的纸张样式 ==================== */
+        
+        /* 纸张样式 - 包装容器 */
+        .paper {
+            background-color: #f0e7d8;
+            border-radius: 40px;
+            padding: 40px;
+            padding-left: 20px;
+            padding-right: 100px;
+            margin: 20px 0;
+        }
+        
+        /* 标题样式 */
+        .paper h2 {
+            position: relative;
+            font-family: 'Arima Madurai', sans-serif;
+            font-weight: 900;
+            font-style: normal;
+            color: #333;
+            margin: 0 auto 20px;
+            text-align: center;
+            font-size: 2.4em;
+            width: fit-content;
+            z-index: 3;
+        }
+        
+        .paper h2::before {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            left: -60px;
+            width: 120px;
+            height: 40px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/h2tl.webp');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+        
+        .paper h2::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            right: -60px;
+            width: 120px;
+            height: 40px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/h2tr.webp');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -1;
+        }
+        
+        .paper h3 {
+            position: relative;
+            font-family: 'Arima Madurai', sans-serif;
+            font-weight: 800;
+            font-style: normal;
+            color: #fff;
+            margin-bottom: 20px;
+            margin-left: 50px;
+            padding: 5px 25px;
+            font-size: 2.0em;
+            width: fit-content;
+            z-index: 3;
+        }
+        
+        .paper h3::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: -50px;
+            width: 40px;
+            height: 40px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/title/h3t.svg');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+        
+        .paper h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            width: 100%;
+            height: 100%;
+            background-color: #554c72;
+            border-radius: 2.0em;
+            z-index: -1;
+        }
+        
+        .paper h4 {
+            position: relative;
+            font-family: 'Arima Madurai', sans-serif;
+            font-weight: 600;
+            font-style: normal;
+            color: #444;
+            margin-bottom: 20px;
+            margin-left: 50px;
+            padding: 5px 35px;
+            font-size: 1.7em;
+            width: fit-content;
+            z-index: 3;
+        }
+        
+        .paper h4::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: -50px;
+            width: 40px;
+            height: 40px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/title/h4t.webp');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+        
+        .paper h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            width: 100%;
+            height: 100%;
+            background-color: #a99ad3;
+            border-radius: 1.7em;
+            z-index: -1;
+        }
+        
+        .paper h5 {
+            position: relative;
+            font-family: 'Arima Madurai', sans-serif;
+            font-weight: 600;
+            font-style: normal;
+            color: #666;
+            margin-bottom: 20px;
+            margin-left: 50px;
+            padding: 5px 45px;
+            font-size: 1.5em;
+            width: fit-content;
+            z-index: 3;
+        }
+        
+        .paper h5::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: calc(-50px + 20px - 12.5px);
+            width: 25px;
+            height: 25px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/title/h5t.svg');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+        
+        .paper h5::after {
+            content: '';
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            width: 100%;
+            height: 100%;
+            background-color: #d2c7ef;
+            border-radius: 1.5em;
+            z-index: -1;
+        }
+        
+        .paper h6 {
+            position: relative;
+            font-family: 'Arima Madurai', sans-serif;
+            font-weight: 600;
+            font-style: normal;
+            color: #666;
+            margin-bottom: 20px;
+            margin-left: 50px;
+            padding: 5px 45px;
+            font-size: 1.3em;
+            width: fit-content;
+            z-index: 3;
+        }
+        
+        .paper h6::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: calc(-50px + 20px - 7.5px);
+            width: 15px;
+            height: 15px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/title/h6t.svg');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+        
+        .paper h6::after {
+            content: '';
+            position: absolute;
+            bottom: 9px;
+            right: 0px;
+            width: 100%;
+            height: 5px;
+            background-color: #d2c7ef;
+            border-radius: 5px;
+            z-index: -1;
+        }
+        
+        /* 段落样式 */
+        .paper p {
+            color: #333;
+            font-family: 'Crimson Text', normal, sans-serif;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            text-indent: 0;
+            font-size: 1.5em;
+            text-align: justify;
+            text-align-last: left;
+        }
+        
+        /* 强调文本样式 */
+        .paper .strong {
+            font-weight: bold;
+            color: #2c5f2d;
+        }
+        
+        .paper .strong:hover {
+            color: #444;
+            text-decoration: underline;
+        }
+        
+        /* 引用样式 */
+        .paper .reference {
+            position: relative;
+            width: 100%;
+            min-height: 150px;
+            background-color: #a99ad3;
+            border-radius: 20px;
+            margin: 40px auto 80px;
+            padding: 80px;
+            padding-top: 90px;
+        }
+        
+        .paper .reference::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border-radius: 15px;
+            background-color: #a99ad3;
+            box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.5);
+        }
+        
+        .paper .reference .left_top_corner,
+        .paper .reference .right_top_corner,
+        .paper .reference .left_bottom_corner,
+        .paper .reference .right_bottom_corner {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+        
+        .paper .reference .left_top_corner {
+            top: 25px;
+            left: 25px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/left-top-box.webp');
+        }
+        
+        .paper .reference .right_top_corner {
+            top: 25px;
+            right: 25px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/right-top-box.webp');
+        }
+        
+        .paper .reference .left_bottom_corner {
+            bottom: 25px;
+            left: 25px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/left-bottom-box.webp');
+        }
+        
+        .paper .reference .right_bottom_corner {
+            bottom: 25px;
+            right: 25px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/right-bottom-box.webp');
+        }
+        
+        .paper .reference .reference_title {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/references.svg');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            z-index: 1;
+        }
+        
+        .paper .reference::after {
+            content: '';
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background-color: #d4cde9;
+            border-radius: 20px;
+            z-index: -3;
+            border-top: 1px solid #a99ad3;
+            border-bottom: 1px solid #a99ad3;
+        }
+        
+        .paper .reference .line {
+            position: absolute;
+            height: 1.5px;
+            width: 90%;
+            background-color: #a99ad3;
+            z-index: -2;
+        }
+        
+        .paper .reference .top-line {
+            left: 7%;
+            bottom: -10px;
+        }
+        
+        .paper .reference .bottom-line {
+            left: 4%;
+            bottom: -18px;
+        }
+        
+        .paper .reference p {
+            position: relative;
+            z-index: 2;
+            color: #fff;
+            font-size: 1.2em;
+            line-height: 1.6;
+            text-indent: 0;
+        }
+        
+        .paper .referlink {
+            color: #acb2ef;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        
+        .paper .referlink:hover {
+            color: #b28dd7;
+            text-decoration: underline;
+        }
+        
+        .paper .reference a {
+            color: #fff;
+        }
+        
+        .paper .reference a:hover {
+            text-decoration: underline;
+        }
+        
+        /* 图片样式 */
+        .paper img {
+            max-width: 80%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .paper .figure-caption {
+            display: block;
+            text-align: center;
+            font-size: 1.4em;
+            color: #555;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            text-align-last: center;
+            font-weight: 600;
+        }
+        
+        /* 图片容器样式 */
+        .content-image-container {
+            margin: 2rem 0;
+            text-align: center;
+        }
+        
+        .content-image {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .content-image-caption {
+            margin-top: 1rem;
+            font-style: italic;
+            color: #666;
+            font-size: 1.1em;
+            padding: 0.5rem 1rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .content-image-error {
+            color: #dc3545;
+            border: 2px dashed #dc3545;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        /* 图片插入按钮样式 */
+        .image-insert-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 0.5rem;
+        }
+        
+        .image-insert-btn:hover {
+            background: #218838;
+        }
+        
+        /* 导入Google字体 */
+        @import url('https://fonts.googleapis.com/css2?family=Arima+Madurai:wght@400;600;800;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+        
+        /* ==================== 新添加的格式选择工具栏 ==================== */
+        
+        .format-toolbar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: var(--light-bg);
+            border-radius: 6px;
+            flex-wrap: wrap;
+        }
+        
+        .format-btn {
+            padding: 0.4rem 0.8rem;
+            background: white;
+            color: var(--dark-text);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+        
+        .format-btn:hover {
+            background: var(--light-bg);
+            border-color: var(--secondary-color);
+        }
+        
+        .format-btn.active {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+        
+        /* 纸张模式切换 */
+        .paper-mode-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: auto;
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--secondary-color);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .format-toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .paper-mode-toggle {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="header-container">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">🧬</div>
+                <div>
+                    <div class="logo-text">北师珠iGEM</div>
+                    <div class="logo-subtext">BNUZ-China 2025</div>
+                </div>
+            </a>
+            <nav class="main-nav">
+                <a href="#project" class="nav-link active" data-page="project">项目总览</a>
+                <a href="#team" class="nav-link" data-page="team">团队介绍</a>
+                <a href="#model" class="nav-link" data-page="model">模型设计</a>
+                <a href="#lab" class="nav-link" data-page="lab">实验室</a>
+                <a href="#human" class="nav-link" data-page="human">人文实践</a>
+                <a href="#parts" class="nav-link" data-page="parts">标准部件</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 格式选择工具栏（仅在编辑模式显示） -->
+        <div class="format-toolbar" id="formatToolbar" style="display: none;">
+            <button class="format-btn" data-format="h2" title="二级标题">标题1</button>
+            <button class="format-btn" data-format="h3" title="三级标题">标题2</button>
+            <button class="format-btn" data-format="h4" title="四级标题">标题3</button>
+            <button class="format-btn" data-format="h5" title="五级标题">标题4</button>
+            <button class="format-btn" data-format="h6" title="六级标题">标题5</button>
+            <button class="format-btn" data-format="p" title="段落">段落</button>
+            <button class="format-btn" data-format="strong" title="强调文本"><strong>强调</strong></button>
+            <button class="format-btn" data-format="reference" title="引用块">引用</button>
+            <button class="format-btn" data-format="img" title="插入图片">图片</button>
+            <button class="format-btn" data-format="ul" title="无序列表">列表</button>
+            <button class="format-btn" data-format="latex-inline" title="行内LaTeX公式">LaTeX行内</button>
+            <button class="format-btn" data-format="latex-block" title="块级LaTeX公式">LaTeX块级</button>
+            <button class="image-insert-btn" id="insertImageBtn" title="插入图片位置">插入图片</button>
+            
+            <div class="paper-mode-toggle">
+                <span>纸张样式:</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="paperModeToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 内容加载容器 -->
+        <div class="content-container">
+            <div class="content-loading" id="contentLoading">
+                <div class="loading-spinner"></div>
+                <p>正在加载iGEM Wiki内容...</p>
+            </div>
+            <div id="wikiContent" style="display: none;"></div>
+        </div>
+
+        <!-- 编辑工具栏（仅对授权用户显示） -->
+        <div class="edit-toolbar" id="editToolbar" style="display: none;">
+            <button class="edit-btn" id="editContentBtn">编辑内容</button>
+            <button class="edit-btn save-btn" id="saveContentBtn" style="display: none;">保存更改</button>
+            <button class="edit-btn" id="cancelEditBtn" style="display: none;">取消</button>
+            <div class="edit-status" id="editStatus"></div>
+        </div>
+
+        <!-- 内容编辑器 -->
+        <div id="editorContainer" style="display: none;">
+            <textarea class="content-editor" id="contentEditor" placeholder="使用Markdown格式编写内容..."></textarea>
+        </div>
+
+        <!-- 时间轴组件 -->
+        <div class="timeline-section" id="timelineSection" style="display: none;">
+            <div class="timeline-header">
+                <h2 class="timeline-title">项目时间轴</h2>
+                <button class="timeline-add-btn" id="addTimelineBtn">+ 添加事件</button>
+            </div>
+            <div class="timeline-container" id="timelineContainer">
+                <!-- 时间轴内容将动态加载 -->
+            </div>
+        </div>
+
+        <!-- 评论系统 -->
+        <div class="comment-section" id="commentSection" style="display: none;">
+            <h2 style="margin-bottom: 1.5rem; color: var(--primary-color);">团队讨论</h2>
+            <div class="comment-input">
+                <select class="comment-author-select" id="commentAuthor">
+                    <option value="team">团队成员</option>
+                    <option value="advisor">指导老师</option>
+                    <option value="visitor">访客</option>
+                </select>
+                <textarea class="comment-textarea" id="commentText" placeholder="发表您的评论或建议..."></textarea>
+                <button class="comment-submit-btn" id="commentSubmitBtn">提交</button>
+            </div>
+            <div class="comments-list" id="commentsList">
+                <!-- 评论将动态加载 -->
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-info">
+                © 2025 北京师范大学珠海校区 iGEM 团队 | 本页面内容通过 JSONBin 动态加载
+            </div>
+            <div class="footer-links">
+                <a href="https://igem.org" class="footer-link" target="_blank">iGEM 官网</a>
+                <a href="https://bnuz.edu.cn" class="footer-link" target="_blank">北师珠官网</a>
+                <a href="mailto:igem@bnuz.edu.cn" class="footer-link">联系我们</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JSONBin 动态加载脚本 -->
+    <script>
+        // 配置信息
+        const CONFIG = {
+            // JSONBin 配置
+            JSONBIN_API_URL: 'https://api.jsonbin.io/v3/b',
+            JSONBIN_MASTER_KEY: '$2a$10$65.YoRtLPFv8FWRwnt1zm.WVgXtmdSmp42kAWTwhf6BbZiwP98D4m',
+            
+            // 各页面对应的 Bin ID
+            BIN_IDS: {
+                'project': '69d355cd856a68218902fd64',  // 项目总览
+                'team': '69d355fb856a68218902fde8',     // 团队介绍
+                'model': '69d3560c36566621a88262e6',    // 模型设计
+                'lab': '69d355eaaaba882197cb3d1d',      // 实验室
+                'human': '69d3561f856a68218902fe54',    // 人文实践
+                'parts': '69d3513936566621a8825323',    // 标准部件
+                'timeline': '69d3561f856a68218902fe54', // 时间轴数据
+                'comments': '69d3561f856a68218902fe54'  // 评论数据
+            },
+            
+            // 当前页面
+            currentPage: 'project',
+            
+            // 编辑状态
+            isEditing: false,
+            originalContent: '',
+            currentContent: '',
+            
+            // 加载状态
+            isLoading: false,
+            
+            // 纸张模式
+            paperMode: true,
+            
+            // 图片配置
+            IMAGES: {
+                BASE_PATH: 'images/',
+                DEFAULT_EXTENSION: 'jpg',
+                
+                // 图片语法正则表达式
+                SYNTAX: {
+                    // 匹配: （project（1），项目架构图）
+                    PATTERN: /（([a-z]+)（(\d+)），([^）]+)）/g,
+                    
+                    // 匹配单个
+                    SINGLE: /（([a-z]+)（(\d+)），([^）]+)）/
+                }
+            }
+        };
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. 初始化导航
+            initNavigation();
+            
+            // 2. 加载当前页面内容
+            loadWikiContent();
+            
+            // 3. 绑定事件监听器
+            bindEventListeners();
+            
+            // 4. 初始化时间轴和评论系统
+            setTimeout(() => {
+                loadTimeline();
+                loadComments();
+                // 5. 检查缺失的图片
+                checkMissingImages();
+            }, 1000);
+        });
+
+        // 初始化导航
+        function initNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const hash = window.location.hash.substring(1) || 'project';
+            
+            navLinks.forEach(link => {
+                const page = link.getAttribute('data-page');
+                link.classList.toggle('active', page === hash);
+                
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetPage = this.getAttribute('data-page');
+                    
+                    // 更新导航状态
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 更新URL哈希
+                    window.location.hash = targetPage;
+                    
+                    // 加载新页面内容
+                    CONFIG.currentPage = targetPage;
+                    loadWikiContent();
+                });
+            });
+            
+            // 监听哈希变化
+            window.addEventListener('hashchange', function() {
+                const hash = window.location.hash.substring(1) || 'project';
+                if (CONFIG.BIN_IDS[hash]) {
+                    CONFIG.currentPage = hash;
+                    loadWikiContent();
+                }
+            });
+        }
+
+        // 加载Wiki内容
+        async function loadWikiContent() {
+            // 防止重复请求
+            if (CONFIG.isLoading) {
+                return;
+            }
+            
+            const binId = CONFIG.BIN_IDS[CONFIG.currentPage];
+            if (!binId) {
+                showError('未找到该页面的配置信息');
+                return;
+            }
+            
+            // 显示加载动画
+            const container = document.getElementById('wikiContent');
+            const loading = document.getElementById('contentLoading');
+            loading.style.display = 'block';
+            container.style.display = 'none';
+            
+            CONFIG.isLoading = true;
+            
+            try {
+                const response = await fetch(`${CONFIG.JSONBIN_API_URL}/${binId}`, {
+                    headers: {
+                        'X-Master-Key': CONFIG.JSONBIN_MASTER_KEY
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: 加载失败`);
+                }
+                
+                const data = await response.json();
+                renderWikiContent(data.record);
+                
+            } catch (error) {
+                console.error('加载Wiki内容失败:', error);
+                showError(`加载失败: ${error.message}`);
+            } finally {
+                CONFIG.isLoading = false;
+            }
+        }
+
+        // 渲染Wiki内容
+        function renderWikiContent(data) {
+            const container = document.getElementById('wikiContent');
+            const loading = document.getElementById('contentLoading');
+            
+            // 清空容器，确保旧内容不会残留
+            container.innerHTML = '';
+            
+            if (!data || !data.content) {
+                container.innerHTML = CONFIG.paperMode 
+                    ? '<div class="paper"><p>暂无内容，请编辑此页面</p></div>'
+                    : '<div class="empty-state"><p>暂无内容，请编辑此页面</p></div>';
+            } else {
+                // 应用纸张模式包装
+                let htmlContent = data.content;
+                
+                // 如果是纸张模式，包装内容
+                if (CONFIG.paperMode && !data.content.includes('class="paper"')) {
+                    htmlContent = `<div class="paper">${data.content}</div>`;
+                }
+                
+                container.innerHTML = htmlContent;
+            }
+            
+            // 显示页面标题
+            if (data.title) {
+                document.title = `${data.title} - 北师珠iGEM Wiki`;
+            }
+            
+            // 渲染LaTeX公式
+            if (window.MathJax) {
+                if (MathJax.typeset) {
+                    MathJax.typeset();
+                } else if (MathJax.startup && MathJax.startup.promise) {
+                    MathJax.startup.promise.then(() => {
+                        MathJax.typeset();
+                    });
+                }
+            }
+            
+            // 显示/隐藏时间轴和评论
+            document.getElementById('timelineSection').style.display = 
+                data.features && data.features.timeline ? 'block' : 'none';
+            document.getElementById('commentSection').style.display = 
+                data.features && data.features.comments ? 'block' : 'none';
+            
+            // 隐藏加载状态，显示内容
+            loading.style.display = 'none';
+            container.style.display = 'block';
+        }
+
+        // 简化的Markdown解析器
+        function parseMarkdown(markdown) {
+            if (!markdown) return '';
+            
+            // 先处理图片语法
+            let processed = markdown;
+            
+            // 替换所有图片语法
+            processed = processed.replace(CONFIG.IMAGES.SYNTAX.PATTERN, function(match, page, number, description) {
+                return generateImageHTML(page, number, description);
+            });
+            
+            // 然后处理原有的Markdown
+            return processed
+                .replace(/^# (.*$)/gm, CONFIG.paperMode ? '<h2>$1</h2>' : '<h1>$1</h1>')
+                .replace(/^## (.*$)/gm, CONFIG.paperMode ? '<h3>$1</h3>' : '<h2>$1</h2>')
+                .replace(/^### (.*$)/gm, CONFIG.paperMode ? '<h4>$1</h4>' : '<h3>$1</h3>')
+                .replace(/^#### (.*$)/gm, CONFIG.paperMode ? '<h5>$1</h5>' : '<h4>$1</h4>')
+                .replace(/^##### (.*$)/gm, CONFIG.paperMode ? '<h6>$1</h6>' : '<h5>$1</h5>')
+                .replace(/\*\*(.*?)\*\*/g, CONFIG.paperMode ? '<span class="strong">$1</span>' : '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/!\[(.*?)\]\((.*?)\)/g, CONFIG.paperMode 
+                    ? '<img src="$2" alt="$1"><div class="figure-caption">$1</div>'
+                    : '<img src="$2" alt="$1" style="max-width:100%; border-radius:8px; margin:1rem 0;">')
+                .replace(/\[(.*?)\]\((.*?)\)/g, CONFIG.paperMode 
+                    ? '<a href="$2" target="_blank" class="referlink">$1</a>'
+                    : '<a href="$2" target="_blank">$1</a>')
+                .replace(/^- (.*$)/gm, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/^>>>\s*(.*$)/gm, CONFIG.paperMode 
+                    ? '<div class="reference"><p>$1</p></div>'
+                    : '<blockquote>$1</blockquote>')
+                .replace(/^\|?(.*)\|?$/gm, function(match) {
+                    if (match.includes('|')) {
+                        return '<tr><td>' + match.replace(/\|/g, '</td><td>') + '</td></tr>';
+                    }
+                    return match;
+                });
+        }
+        
+        // 生成图片HTML
+        function generateImageHTML(page, number, description) {
+            const imageId = `${page}（${number}）`;
+            const imageUrl = `${CONFIG.IMAGES.BASE_PATH}${page}/${imageId}.${CONFIG.IMAGES.DEFAULT_EXTENSION}`;
+            
+            return `
+                <div class="content-image-container" data-image-id="${imageId}">
+                    <img src="${imageUrl}" 
+                         alt="${description}"
+                         class="content-image"
+                         loading="lazy"
+                         onerror="handleImageError(this, '${imageId}', '${CONFIG.IMAGES.BASE_PATH}${page}/')">
+                    <div class="content-image-caption">${description}</div>
+                </div>
+            `;
+        }
+        
+        // 处理图片加载错误
+        function handleImageError(img, imageId, basePath) {
+            img.onerror = null;
+            img.style.display = 'none';
+            const container = img.parentElement;
+            const fullPath = basePath + imageId + '.' + CONFIG.IMAGES.DEFAULT_EXTENSION;
+            container.innerHTML = '<div class="content-image-error">图片未找到: ' + imageId + '<br>请确保图片文件已上传到: ' + fullPath + '</div>';
+        }
+
+        // 绑定事件监听器
+        function bindEventListeners() {
+            // 编辑按钮
+            document.getElementById('editContentBtn').addEventListener('click', enableEditing);
+            document.getElementById('saveContentBtn').addEventListener('click', saveContent);
+            document.getElementById('cancelEditBtn').addEventListener('click', cancelEditing);
+            
+            // 评论提交
+            document.getElementById('commentSubmitBtn').addEventListener('click', submitComment);
+            
+            // 时间轴添加
+            document.getElementById('addTimelineBtn').addEventListener('click', addTimelineEvent);
+            
+            // 格式按钮
+            document.querySelectorAll('.format-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const format = this.getAttribute('data-format');
+                    applyFormat(format);
+                });
+            });
+            
+            // 图片插入按钮
+            document.getElementById('insertImageBtn')?.addEventListener('click', function() {
+                insertImageSyntax();
+            });
+            
+            // 纸张模式切换
+            document.getElementById('paperModeToggle').addEventListener('change', function() {
+                CONFIG.paperMode = this.checked;
+                // 重新加载当前页面内容以应用新模式
+                loadWikiContent();
+            });
+        }
+
+        // 应用格式
+        function applyFormat(format) {
+            const editor = document.getElementById('contentEditor');
+            if (!editor) return;
+            
+            const selectionStart = editor.selectionStart;
+            const selectionEnd = editor.selectionEnd;
+            const selectedText = editor.value.substring(selectionStart, selectionEnd);
+            const beforeText = editor.value.substring(0, selectionStart);
+            const afterText = editor.value.substring(selectionEnd);
+            
+            let formattedText = '';
+            
+            switch(format) {
+                case 'h2':
+                    formattedText = `# ${selectedText || '标题'}`;
+                    break;
+                case 'h3':
+                    formattedText = `## ${selectedText || '子标题'}`;
+                    break;
+                case 'h4':
+                    formattedText = `### ${selectedText || '小标题'}`;
+                    break;
+                case 'h5':
+                    formattedText = `#### ${selectedText || '小小标题'}`;
+                    break;
+                case 'h6':
+                    formattedText = `##### ${selectedText || '小小小标题'}`;
+                    break;
+                case 'p':
+                    formattedText = `${selectedText || '段落内容'}`;
+                    break;
+                case 'strong':
+                    formattedText = `**${selectedText || '强调文本'}**`;
+                    break;
+                case 'reference':
+                    formattedText = `>>> ${selectedText || '引用内容'}`;
+                    break;
+                case 'img':
+                    const imgUrl = prompt('请输入图片URL:');
+                    if (imgUrl) {
+                        const altText = prompt('请输入图片描述:', '图片描述');
+                        formattedText = `![${altText || '图片'}](${imgUrl})`;
+                    }
+                    break;
+                case 'ul':
+                    formattedText = `- ${selectedText || '列表项'}`;
+                    break;
+                case 'latex-inline':
+                    formattedText = '$' + (selectedText || 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}') + '$';
+                    break;
+                case 'latex-block':
+                    formattedText = '$$' + (selectedText || 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}') + '$$';
+                    break;
+            }
+            
+            editor.value = beforeText + formattedText + afterText;
+            editor.focus();
+            
+            // 设置光标位置
+            const newPosition = selectionStart + formattedText.length;
+            editor.setSelectionRange(newPosition, newPosition);
+        }
+        
+        // 插入图片语法到编辑器
+        function insertImageSyntax() {
+            const editor = document.getElementById('contentEditor');
+            if (!editor) return;
+            
+            // 获取当前页面
+            const currentPage = CONFIG.currentPage;
+            
+            // 查找当前页面已使用的最大图片编号
+            const content = editor.value;
+            const pattern = new RegExp(`（${currentPage}（(\\d+)）`, 'g');
+            let maxNumber = 0;
+            let match;
+            
+            while ((match = pattern.exec(content)) !== null) {
+                const num = parseInt(match[1]);
+                if (num > maxNumber) maxNumber = num;
+            }
+            
+            const nextNumber = maxNumber + 1;
+            const imageSyntax = `（${currentPage}（${nextNumber}），请输入图片描述）`;
+            
+            // 插入到编辑器
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const beforeText = editor.value.substring(0, start);
+            const afterText = editor.value.substring(end);
+            
+            editor.value = beforeText + imageSyntax + afterText;
+            editor.focus();
+            
+            // 设置光标位置在"请输入图片描述"处
+            const cursorPos = start + imageSyntax.indexOf('请输入图片描述');
+            editor.setSelectionRange(cursorPos, cursorPos + 6);
+        }
+
+        // 启用编辑模式
+        function enableEditing() {
+            CONFIG.isEditing = true;
+            const contentContainer = document.getElementById('wikiContent');
+            const editorContainer = document.getElementById('editorContainer');
+            const formatToolbar = document.getElementById('formatToolbar');
+            
+            CONFIG.originalContent = contentContainer.innerHTML;
+            // 如果内容在.paper容器中，提取内部内容
+            let contentToEdit = CONFIG.originalContent;
+            if (CONFIG.paperMode && contentToEdit.includes('<div class="paper">')) {
+                const match = contentToEdit.match(/<div class="paper">([\s\S]*?)<\/div>/);
+                if (match && match[1]) {
+                    contentToEdit = match[1];
+                }
+            }
+            
+            // 转换HTML回Markdown
+            const markdownContent = htmlToMarkdown(contentToEdit);
+            document.getElementById('contentEditor').value = markdownContent;
+            
+            // 显示编辑器和格式工具栏
+            contentContainer.style.display = 'none';
+            editorContainer.style.display = 'block';
+            formatToolbar.style.display = 'flex';
+            document.getElementById('saveContentBtn').style.display = 'inline-block';
+            document.getElementById('cancelEditBtn').style.display = 'inline-block';
+            document.getElementById('editContentBtn').style.display = 'none';
+            
+            updateEditStatus('编辑模式已启用');
+        }
+
+        // HTML转Markdown
+        function htmlToMarkdown(html) {
+            if (!html) return '';
+            
+            // 先处理图片容器
+            let result = html
+                .replace(/<div class="content-image-container"[^>]*data-image-id="([^"]+)"[^>]*>[\s\S]*?<div class="content-image-caption">(.*?)<\/div>[\s\S]*?<\/div>/gi, function(match, imageId, description) {
+                    // 从imageId中提取page和number
+                    const matchId = imageId.match(/([a-z]+)（(\d+)）/);
+                    if (matchId) {
+                        const page = matchId[1];
+                        const number = matchId[2];
+                        return `（${page}（${number}），${description}）`;
+                    }
+                    return match;
+                });
+            
+            // 然后处理其他Markdown元素
+            return result
+                .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '# $1\n\n')
+                .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '## $1\n\n')
+                .replace(/<h4[^>]*>(.*?)<\/h4>/gi, '### $1\n\n')
+                .replace(/<h5[^>]*>(.*?)<\/h5>/gi, '#### $1\n\n')
+                .replace(/<h6[^>]*>(.*?)<\/h6>/gi, '##### $1\n\n')
+                .replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
+                .replace(/<span class="strong"[^>]*>(.*?)<\/span>/gi, '**$1**')
+                .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
+                .replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
+                .replace(/<img[^>]*src="(.*?)"[^>]*alt="(.*?)"[^>]*>/gi, '![$2]($1)')
+                .replace(/<a[^>]*href="(.*?)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
+                .replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, function(match) {
+                    return match.replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n');
+                })
+                .replace(/<div class="reference"[^>]*>[\s\S]*?<p>(.*?)<\/p>[\s\S]*?<\/div>/gi, '>>> $1')
+                .replace(/<[^>]*>/g, '')
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&amp;/g, '&')
+                .trim();
+        }
+
+        // 保存内容
+        async function saveContent() {
+            const binId = CONFIG.BIN_IDS[CONFIG.currentPage];
+            const newMarkdown = document.getElementById('contentEditor').value;
+            
+            if (!binId) {
+                showError('未找到该页面的配置信息');
+                return;
+            }
+            
+            // 检查图片语法是否正确
+            const imageMatches = newMarkdown.match(CONFIG.IMAGES.SYNTAX.PATTERN);
+            if (imageMatches) {
+                const invalidSyntax = [];
+                
+                imageMatches.forEach(syntax => {
+                    const match = syntax.match(CONFIG.IMAGES.SYNTAX.SINGLE);
+                    if (!match) {
+                        invalidSyntax.push(syntax);
+                    }
+                });
+                
+                if (invalidSyntax.length > 0) {
+                    if (!confirm(`发现 ${invalidSyntax.length} 个格式不正确的图片语法。是否继续保存？\n\n不正确的语法：\n${invalidSyntax.join('\n')}`)) {
+                        return;
+                    }
+                }
+            }
+            
+            // 添加确认提示，防止误操作
+            if (!confirm('确定要保存修改吗？')) {
+                return;
+            }
+            
+            try {
+                updateEditStatus('正在保存...');
+                
+                // 1. 先获取当前完整数据
+                const getResponse = await fetch(`${CONFIG.JSONBIN_API_URL}/${binId}`, {
+                    headers: {
+                        'X-Master-Key': CONFIG.JSONBIN_MASTER_KEY,
+                        'X-Bin-Meta': 'false'
+                    }
+                });
+                
+                if (!getResponse.ok) {
+                    throw new Error(`HTTP ${getResponse.status}: 获取数据失败`);
+                }
+                
+                const currentData = await getResponse.json();
+                
+                // 2. 解析Markdown为HTML
+                const htmlContent = parseMarkdown(newMarkdown);
+                
+                // 3. 创建更新后的数据对象，保留所有原有字段
+                const updatedData = {
+                    ...currentData,  // 保留所有原有字段
+                    content: htmlContent,  // 更新为解析后的HTML
+                    last_updated: new Date().toISOString()  // 更新时间戳
+                };
+                
+                // 4. 发送更新请求
+                const putResponse = await fetch(`${CONFIG.JSONBIN_API_URL}/${binId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': CONFIG.JSONBIN_MASTER_KEY
+                    },
+                    body: JSON.stringify(updatedData)
+                });
+                
+                if (!putResponse.ok) {
+                    throw new Error(`HTTP ${putResponse.status}: 保存失败`);
+                }
+                
+                // 5. 更新本地显示
+                renderWikiContent(updatedData);
+                
+                // 6. 退出编辑模式
+                cancelEditing();
+                updateEditStatus('保存成功！');
+                
+                // 7. 重新加载时间轴和评论（如果存在）
+                if (currentData.features && currentData.features.timeline) {
+                    loadTimeline();
+                }
+                if (currentData.features && currentData.features.comments) {
+                    loadComments();
+                }
+                
+            } catch (error) {
+                console.error('保存内容失败:', error);
+                showError(`保存失败: ${error.message}`);
+            }
+        }
+
+        // 取消编辑
+        function cancelEditing() {
+            CONFIG.isEditing = false;
+            
+            document.getElementById('contentEditor').value = '';
+            document.getElementById('editorContainer').style.display = 'none';
+            document.getElementById('formatToolbar').style.display = 'none';
+            document.getElementById('wikiContent').style.display = 'block';
+            document.getElementById('saveContentBtn').style.display = 'none';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+            document.getElementById('editContentBtn').style.display = 'inline-block';
+            
+            updateEditStatus('');
+        }
+        
+        // 加载页面时检查缺失的图片
+        function checkMissingImages() {
+            const imageContainers = document.querySelectorAll('.content-image-container');
+            
+            imageContainers.forEach(container => {
+                const img = container.querySelector('img');
+                if (img) {
+                    // 检查图片是否加载成功
+                    img.addEventListener('error', function() {
+                        const imageId = container.dataset.imageId;
+                        console.warn(`图片加载失败: ${imageId}`);
+                    });
+                }
+            });
+        }
+        
+        // 添加快捷键支持
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+Shift+I 插入图片
+            if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+                e.preventDefault();
+                insertImageSyntax();
+            }
+        });
+
+        // 加载时间轴
+        async function loadTimeline() {
+            try {
+                const response = await fetch(`${CONFIG.JSONBIN_API_URL}/${CONFIG.BIN_IDS.timeline}`, {
+                    headers: {
+                        'X-Master-Key': CONFIG.JSONBIN_MASTER_KEY
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: 时间轴加载失败`);
+                }
+                
+                const data = await response.json();
+                renderTimeline(data.record);
+                
+            } catch (error) {
+                console.error('加载时间轴失败:', error);
+                document.getElementById('timelineContainer').innerHTML = 
+                    `<p style="text-align:center; color:#666;">时间轴加载失败</p>`;
+            }
+        }
+
+        // 渲染时间轴
+        function renderTimeline(data) {
+            const container = document.getElementById('timelineContainer');
+            if (!data || !data.events || data.events.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#666;">暂无时间轴数据</p>';
+                return;
+            }
+            
+            const timelineHTML = data.events.map(event => `
+                <div class="timeline-item">
+                    <div class="timeline-date">${event.date}</div>
+                    <div class="timeline-content">${event.content}</div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = timelineHTML;
+        }
+
+        // 加载评论
+        async function loadComments() {
+            try {
+                const response = await fetch(`${CONFIG.JSONBIN_API_URL}/${CONFIG.BIN_IDS.comments}`, {
+                    headers: {
+                        'X-Master-Key': CONFIG.JSONBIN_MASTER_KEY
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: 评论加载失败`);
+                }
+                
+                const data = await response.json();
+                renderComments(data.record);
+                
+            } catch (error) {
+                console.error('加载评论失败:', error);
+                document.getElementById('commentsList').innerHTML = 
+                    `<p style="text-align:center; color:#666;">评论加载失败</p>`;
+            }
+        }
+
+        // 渲染评论
+        function renderComments(data) {
+            const container = document.getElementById('commentsList');
+            if (!data || !data.comments || data.comments.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#666;">暂无评论</p>';
+                return;
+            }
+            
+            const commentsHTML = data.comments.map(comment => `
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <span class="comment-author">${comment.author}</span>
+                        <span class="comment-time">${formatTime(comment.timestamp)}</span>
+                    </div>
+                    <div class="comment-content">${comment.content}</div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = commentsHTML;
+        }
+
+        // 提交评论
+        async function submitComment() {
+            const author = document.getElementById('commentAuthor').value;
+            const content = document.getElementById('commentText').value.trim();
+            
+            if (!content) {
+                alert('请输入评论内容');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${CONFIG.JSONBIN_API_URL}/${CONFIG.BIN_IDS.comments}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': CONFIG.JSONBIN_MASTER_KEY
+                    },
+                    body: JSON.stringify({
+                        comments: [
+                            {
+                                author: author,
+                                content: content,
+                                timestamp: new Date().toISOString()
+                            }
+                        ]
+                    })
+                });
+                
+                if (response.ok) {
+                    document.getElementById('commentText').value = '';
+                    loadComments();
+                }
+                
+            } catch (error) {
+                console.error('提交评论失败:', error);
+                alert('评论提交失败，请重试');
+            }
+        }
+
+        // 添加时间轴事件
+        async function addTimelineEvent() {
+            const date = prompt('请输入事件日期（YYYY-MM-DD）：');
+            const content = prompt('请输入事件描述：');
+            
+            if (!date || !content) return;
+            
+            try {
+                const response = await fetch(`${CONFIG.JSONBIN_API_URL}/${CONFIG.BIN_IDS.timeline}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': CONFIG.JSONBIN_MASTER_KEY
+                    },
+                    body: JSON.stringify({
+                        events: [
+                            {
+                                date: date,
+                                content: content
+                            }
+                        ]
+                    })
+                });
+                
+                if (response.ok) {
+                    loadTimeline();
+                }
+                
+            } catch (error) {
+                console.error('添加时间轴事件失败:', error);
+                alert('添加失败，请重试');
+            }
+        }
+
+        // 工具函数
+        function updateEditStatus(message) {
+            document.getElementById('editStatus').textContent = message;
+        }
+
+        function showError(message) {
+            const container = document.getElementById('wikiContent');
+            const loading = document.getElementById('contentLoading');
+            
+            loading.style.display = 'none';
+            container.innerHTML = `<div class="error-state" style="text-align:center; padding:2rem; color:#e74c3c;">
+                <p style="font-size:1.2rem; margin-bottom:1rem;">⚠️ 加载失败</p>
+                <p>${message}</p>
+                <button onclick="loadWikiContent()" style="margin-top:1rem; padding:0.5rem 1.5rem; background:#3498db; color:white; border:none; border-radius:4px; cursor:pointer;">
+                    重试
+                </button>
+            </div>`;
+            container.style.display = 'block';
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // 检查编辑权限（简化版）
+        function checkEditPermission() {
+            // 这里可以添加权限检查逻辑
+            // 例如检查本地存储的token或用户角色
+            const hasPermission = localStorage.getItem('igem_edit_token') || 
+                                 confirm('您确定要编辑此页面吗？\n注意：所有更改将公开可见。');
+            
+            if (hasPermission) {
+                document.getElementById('editToolbar').style.display = 'flex';
+            }
+        }
+
+        // 页面加载后检查权限
+        window.addEventListener('load', checkEditPermission);
+    </script>
+</body>
+</html>
