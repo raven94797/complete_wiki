@@ -412,7 +412,8 @@
                 // 更新每个点的位置，模拟海草摆动
                 for (let i = 1; i < this.points.length; i++) {
                     const point = this.points[i];
-                    const baseY = (i / (this.points.length - 1)) * this.height;
+                    // 使用负数 baseY，保持向上生长的方向
+                    const baseY = -(i / (this.points.length - 1)) * this.height;
                     
                     // 基础摆动
                     const sway = Math.sin(t * swayFrequency + i * 0.5) * currentStrength * flexibility * 30;
