@@ -277,11 +277,10 @@
             }
             
             initPoints() {
-                // 创建绳索点（从底部向上生长）
+                // 创建绳索点（向下生长）
                 for (let i = 0; i < this.pointCount; i++) {
                     const t = i / (this.pointCount - 1);
-                    // y 坐标从 0（底部）到 -height（顶部），这样海草向上生长
-                    this.points.push(new PIXI.Point(0, -t * this.height));
+                    this.points.push(new PIXI.Point(0, t * this.height));
                 }
             }
             
@@ -412,8 +411,7 @@
                 // 更新每个点的位置，模拟海草摆动
                 for (let i = 1; i < this.points.length; i++) {
                     const point = this.points[i];
-                    // 使用负数 baseY，保持向上生长的方向
-                    const baseY = -(i / (this.points.length - 1)) * this.height;
+                    const baseY = (i / (this.points.length - 1)) * this.height;
                     
                     // 基础摆动
                     const sway = Math.sin(t * swayFrequency + i * 0.5) * currentStrength * flexibility * 30;
@@ -555,11 +553,18 @@
                     const x = Math.random() * window.innerWidth;
                     const y = window.innerHeight - 50;
                     
+                    // 根据水平位置设置不同高度（层次感）
+                    const horizontalRatio = x / window.innerWidth;
+                    const height = 100 + horizontalRatio * 200;
+                    
                     const seaweed = new Seaweed(this.app, x, y, {
-                        height: 150 + Math.random() * 200,
-                        width: 12 + Math.random() * 15,
+                        height: height,
+                        width: 10 + Math.random() * 8,
                         pointCount: 18
                     });
+                    
+                    // 添加轻微倾斜，看起来更自然
+                    seaweed.rope.rotation = (horizontalRatio - 0.5) * 0.3;
                     
                     seaweed.setParams(this.params);
                     this.seaweeds.push(seaweed);
