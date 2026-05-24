@@ -431,7 +431,7 @@
             async loadTexture() {
                 try {
                     // 优先尝试使用 Base64 嵌入纹理（避免 CORS 问题）
-                    const base64Texture = this.getBase64Texture();
+                    const base64Texture = await this.getBase64Texture();
                     if (base64Texture) {
                         this.texture = PIXI.Texture.from(base64Texture);
                         console.log('✓ 海草纹理（Base64）加载成功！');
