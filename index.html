@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PixiJS 高级海草动态模拟</title>
+    <title>WebGL 海草动态模拟</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -30,38 +32,27 @@
             top: 20px;
             left: 20px;
             z-index: 100;
-            background: rgba(0, 20, 40, 0.8);
-            padding: 20px 25px;
-            border-radius: 15px;
+            background: rgba(0, 20, 40, 0.7);
+            padding: 15px 20px;
+            border-radius: 10px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(78, 205, 196, 0.3);
-            max-width: 350px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 300px;
         }
         
         h1 {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             background: linear-gradient(90deg, #4ecdc4, #44a08d);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 12px;
-        }
-        
-        p {
-            font-size: 0.95rem;
-            color: #a8d8ff;
-            line-height: 1.6;
             margin-bottom: 8px;
         }
         
-        .feature-list {
-            margin-top: 15px;
-            padding-left: 20px;
-        }
-        
-        .feature-list li {
-            color: #7ec8e3;
-            margin-bottom: 5px;
+        p {
             font-size: 0.9rem;
+            color: #a8d8ff;
+            line-height: 1.4;
+            margin-bottom: 5px;
         }
         
         .controls {
@@ -69,50 +60,48 @@
             bottom: 20px;
             right: 20px;
             z-index: 100;
-            background: rgba(0, 20, 40, 0.8);
-            padding: 20px 25px;
-            border-radius: 15px;
+            background: rgba(0, 20, 40, 0.7);
+            padding: 15px 20px;
+            border-radius: 10px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(78, 205, 196, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .control-group {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         
         .control-label {
             display: block;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #4ecdc4;
-            margin-bottom: 8px;
-            font-weight: 600;
+            margin-bottom: 5px;
         }
         
         .control-slider {
-            width: 220px;
-            height: 8px;
+            width: 200px;
+            height: 6px;
             -webkit-appearance: none;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
             outline: none;
         }
         
         .control-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: linear-gradient(135deg, #4ecdc4, #44a08d);
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(78, 205, 196, 0.5);
         }
         
         .control-value {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #44a08d;
             font-weight: bold;
             display: inline-block;
-            margin-left: 12px;
+            margin-left: 10px;
         }
         
         .stats {
@@ -120,11 +109,11 @@
             top: 20px;
             right: 20px;
             z-index: 100;
-            background: rgba(0, 20, 40, 0.8);
-            padding: 15px 20px;
-            border-radius: 15px;
+            background: rgba(0, 20, 40, 0.7);
+            padding: 10px 15px;
+            border-radius: 10px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(78, 205, 196, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .stat-item {
@@ -132,7 +121,7 @@
         }
         
         .stat-value {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             font-weight: bold;
             background: linear-gradient(90deg, #4ecdc4, #44a08d);
             -webkit-background-clip: text;
@@ -140,9 +129,8 @@
         }
         
         .stat-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #a8d8ff;
-            margin-top: 5px;
         }
         
         .loading {
@@ -160,29 +148,29 @@
         }
         
         .loading-bar {
-            width: 400px;
-            height: 4px;
+            width: 300px;
+            height: 3px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 2px;
             overflow: hidden;
-            margin-top: 30px;
+            margin-top: 20px;
         }
         
         .loading-progress {
             height: 100%;
             background: linear-gradient(90deg, #4ecdc4, #44a08d);
             width: 0%;
-            transition: width 0.4s ease;
+            transition: width 0.3s ease;
         }
         
         @media (max-width: 768px) {
             #info, .controls, .stats {
-                padding: 12px;
+                padding: 10px;
                 max-width: calc(100vw - 40px);
             }
             
             .control-slider {
-                width: 160px;
+                width: 150px;
             }
         }
     </style>
@@ -191,16 +179,10 @@
     <div id="container"></div>
     
     <div id="info">
-        <h1>PixiJS 高级海草模拟</h1>
-        <p>基于 PixiJS MeshRope 的真实物理模拟</p>
-        <p>支持 GPU 加速渲染，性能卓越</p>
-        
-        <ul class="feature-list">
-            <li>MeshRope 绳索动力学</li>
-            <li>自定义 GLSL 着色器</li>
-            <li>水下尘埃粒子滤镜</li>
-            <li>实时物理参数调节</li>
-        </ul>
+        <h1>真实海草动态模拟</h1>
+        <p>基于 WebGL 的实时物理模拟</p>
+        <p>鼠标拖动旋转视角，滚轮缩放</p>
+        <p>每个海草通过纹理贴图和物理算法生成</p>
     </div>
     
     <div class="controls">
@@ -228,37 +210,22 @@
     </div>
     
     <div class="loading" id="loading">
-        <h1>正在初始化 PixiJS 海草场景...</h1>
+        <h1>正在初始化海草场景...</h1>
         <div class="loading-bar">
             <div class="loading-progress" id="loadingProgress"></div>
         </div>
     </div>
     
-    <script type="importmap">
-        {
-            "imports": {
-                "pixi.js": "https://cdn.jsdelivr.net/npm/pixi.js@8.2.6/dist/pixi.min.mjs"
-            }
-        }
-    </script>
-    
-    <script type="module">
-        import * as PIXI from 'pixi.js';
+    <script>
+        // 纹理加载状态
+        let textureLoaded = false;
         
-        // ========================================
-        // 海草类
-        // ========================================
-        class Seaweed {
-            constructor(app, x, y, options = {}) {
-                this.app = app;
-                this.x = x;
-                this.baseY = y;
-                this.height = options.height || 200 + Math.random() * 100;
-                this.width = options.width || 15 + Math.random() * 10;
-                this.pointCount = options.pointCount || 15;
-                this.points = [];
-                this.swayOffset = Math.random() * Math.PI * 2;
-                this.baseRotation = Math.random() * Math.PI * 2;
+        // 主类
+        class SeaweedScene {
+            constructor() {
+                this.container = document.getElementById('container');
+                this.loading = document.getElementById('loading');
+                this.loadingProgress = document.getElementById('loadingProgress');
                 
                 // 物理参数
                 this.params = {
@@ -267,321 +234,461 @@
                     flexibility: 0.7
                 };
                 
-                this.textureLoaded = false;
-                
-                this.initPoints();
-                this.createMeshRope();
-                
-                // 异步加载外部纹理
-                this.loadTexture();
-            }
-            
-            initPoints() {
-                // 创建绳索点（向下生长）
-                for (let i = 0; i < this.pointCount; i++) {
-                    const t = i / (this.pointCount - 1);
-                    this.points.push(new PIXI.Point(0, t * this.height));
-                }
-            }
-            
-            async loadTexture() {
-                try {
-                    // 优先尝试使用 Base64 嵌入纹理（避免 CORS 问题）
-                    const base64Texture = await this.getBase64Texture();
-                    if (base64Texture) {
-                        this.texture = PIXI.Texture.from(base64Texture);
-                        console.log('✓ 海草纹理（Base64）加载成功！');
-                        if (this.rope) {
-                            this.rope.texture = this.texture;
-                        }
-                        this.textureLoaded = true;
-                        return;
-                    }
-                    
-                    // 如果没有 Base64，尝试加载外部文件
-                    this.texture = await PIXI.Assets.load('./seaweed.png');
-                    console.log('✓ 海草纹理加载成功！');
-                    
-                    // 更新所有使用该纹理的海草
-                    if (this.rope) {
-                        this.rope.texture = this.texture;
-                    }
-                    this.textureLoaded = true;
-                } catch (error) {
-                    console.warn('⚠ 海草纹理加载失败，使用程序化纹理:', error);
-                    // 加载失败，使用程序化纹理作为备用
-                    this.texture = this.createProceduralTexture();
-                    if (this.rope) {
-                        this.rope.texture = this.texture;
-                    }
-                }
-            }
-            
-            async getBase64Texture() {
-                // ========================================
-                // 从外部文件读取 Base64 纹理
-                // ========================================
-                try {
-                    const response = await fetch('./seaweed-base64-code.txt');
-                    const text = await response.text();
-                    
-                    // 文件内容格式: return 'data:image/png;base64,...'
-                    // 提取 return 语句后的字符串
-                    const match = text.match(/return\s+['"](data:[^'"]+)['"]/);
-                    if (match && match[1]) {
-                        console.log('✓ 从外部文件加载 Base64 纹理成功！');
-                        return match[1];
-                    }
-                } catch (error) {
-                    console.warn('⚠ 读取 Base64 文件失败:', error);
-                }
-                
-                return null; // 返回 null 表示不使用 Base64
-            }
-            
-            
-            createProceduralTexture() {
-                // 创建程序化海草纹理作为备用
-                const canvas = document.createElement('canvas');
-                canvas.width = 64;
-                canvas.height = 512;
-                const ctx = canvas.getContext('2d');
-                
-                // 渐变背景
-                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-                gradient.addColorStop(0, '#8ade78');      // 顶部亮绿色
-                gradient.addColorStop(0.3, '#5dd879');   // 中上部绿色
-                gradient.addColorStop(0.6, '#2eb85c');   // 中部绿色
-                gradient.addColorStop(1, '#1a8a42');     // 底部深绿色
-                
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                // 添加叶脉
-                ctx.strokeStyle = 'rgba(0, 80, 40, 0.2)';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(canvas.width / 2, 0);
-                ctx.lineTo(canvas.width / 2, canvas.height);
-                ctx.stroke();
-                
-                // 添加斑点纹理
-                for (let i = 0; i < 30; i++) {
-                    ctx.fillStyle = `rgba(0, 60, 30, ${0.05 + Math.random() * 0.08})`;
-                    ctx.beginPath();
-                    ctx.ellipse(
-                        canvas.width / 2 + (Math.random() - 0.5) * 40,
-                        Math.random() * canvas.height,
-                        3 + Math.random() * 8,
-                        20 + Math.random() * 40,
-                        0, 0, Math.PI * 2
-                    );
-                    ctx.fill();
-                }
-                
-                return PIXI.Texture.from(canvas);
-            }
-            
-            createMeshRope() {
-                // 初始使用程序化纹理，加载完成后会替换
-                this.texture = this.createProceduralTexture();
-                
-                // 创建 MeshRope
-                this.rope = new PIXI.MeshRope({
-                    texture: this.texture,
-                    points: this.points
-                });
-                
-                this.rope.x = this.x;
-                this.rope.y = this.baseY;
-                this.rope.rotation = this.baseRotation;
-                
-                // 设置混合模式
-                this.rope.alpha = 0.9;
-            }
-            
-            update(time) {
-                const t = time + this.swayOffset;
-                const {
-                    currentStrength,
-                    swayFrequency,
-                    flexibility
-                } = this.params;
-                
-                // 更新每个点的位置，模拟海草摆动
-                for (let i = 1; i < this.points.length; i++) {
-                    const point = this.points[i];
-                    const baseY = (i / (this.points.length - 1)) * this.height;
-                    
-                    // 基础摆动
-                    const sway = Math.sin(t * swayFrequency + i * 0.5) * currentStrength * flexibility * 30;
-                    
-                    // 湍流效果
-                    const turbulence = Math.sin(t * 1.5 + i * 0.3) * 5 + 
-                                     Math.cos(t * 2.0 + i * 0.4) * 3;
-                    
-                    // 高度因子 - 越高摆动越大
-                    const heightFactor = i / (this.points.length - 1);
-                    
-                    // 设置新位置
-                    point.x = sway * heightFactor + turbulence * heightFactor;
-                    point.y = baseY + Math.sin(heightFactor * Math.PI) * 10;
-                }
-            }
-            
-            setParams(params) {
-                Object.assign(this.params, params);
-            }
-        }
-        
-        // ========================================
-        // 气泡类
-        // ========================================
-        class Bubble {
-            constructor(app) {
-                this.app = app;
-                this.graphics = new PIXI.Graphics();
-                this.reset();
-                
-                // 随机速度
-                this.speedY = 0.5 + Math.random() * 1.5;
-                this.speedX = (Math.random() - 0.5) * 0.5;
-                this.size = 3 + Math.random() * 8;
-            }
-            
-            reset() {
-                this.graphics.x = Math.random() * window.innerWidth;
-                this.graphics.y = window.innerHeight + Math.random() * 100;
-                this.speedY = 0.5 + Math.random() * 1.5;
-                this.speedX = (Math.random() - 0.5) * 0.5;
-                this.size = 3 + Math.random() * 8;
-            }
-            
-            update() {
-                this.graphics.y -= this.speedY;
-                this.graphics.x += Math.sin(this.graphics.y * 0.02) * 0.3;
-                
-                // 重置位置
-                if (this.graphics.y < -20) {
-                    this.reset();
-                }
-                
-                // 绘制气泡
-                this.graphics.clear();
-                this.graphics.circle(0, 0, this.size);
-                this.graphics.stroke({ width: 1.5, color: 0x88ccff, alpha: 0.6 });
-                this.graphics.fill({ color: 0xaaddff, alpha: 0.2 });
-            }
-        }
-        
-        // ========================================
-        // 主场景类
-        // ========================================
-        class UnderwaterScene {
-            constructor() {
-                this.params = {
-                    currentStrength: 0.5,
-                    swayFrequency: 1.0,
-                    flexibility: 0.7
-                };
-                
+                // 初始化
                 this.init();
             }
             
-            async init() {
-                // 创建 PixiJS 应用
-                this.app = new PIXI.Application();
+            init() {
+                // 1. 初始化 Three.js 渲染器
+                this.initThreeJS();
                 
-                await this.app.init({
-                    resizeTo: window,
-                    backgroundColor: 0x001122,
-                    antialias: true,
-                    resolution: window.devicePixelRatio || 1,
-                    autoDensity: true
+                // 2. 创建场景元素（异步）
+                this.createScene().then(() => {
+                    // 3. 绑定事件
+                    this.bindEvents();
+                    
+                    // 4. 开始动画
+                    this.animate();
+                    
+                    // 5. 加载完成处理
+                    setTimeout(() => {
+                        this.hideLoading();
+                    }, 1000);
                 });
+            }
+            
+            initThreeJS() {
+                // 创建场景
+                this.scene = new THREE.Scene();
+                this.scene.fog = new THREE.Fog(0x001122, 10, 50);
                 
-                document.getElementById('container').appendChild(this.app.canvas);
+                // 创建相机
+                this.camera = new THREE.PerspectiveCamera(
+                    60, 
+                    window.innerWidth / window.innerHeight, 
+                    0.1, 
+                    1000
+                );
+                this.camera.position.set(0, 5, 10);
+                
+                // 创建渲染器
+                this.renderer = new THREE.WebGLRenderer({ 
+                    antialias: true,
+                    alpha: true
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(window.devicePixelRatio);
+                this.renderer.setClearColor(0x001122, 1);
+                this.container.appendChild(this.renderer.domElement);
+                
+                // 添加控制器
+                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true;
+                this.controls.dampingFactor = 0.05;
+                this.controls.maxPolarAngle = Math.PI * 0.8;
+                this.controls.minDistance = 5;
+                this.controls.maxDistance = 30;
+                
+                // 初始化 FPS 计数器
+                this.fpsCounter = document.getElementById('fps');
+                this.frameCount = 0;
+                this.lastFpsUpdate = performance.now();
+            }
+            
+            async createScene() {
+                // 添加环境光
+                const ambientLight = new THREE.AmbientLight(0x336688, 0.3);
+                this.scene.add(ambientLight);
+                
+                // 添加方向光（模拟水下光线）
+                const directionalLight = new THREE.DirectionalLight(0x88ccff, 0.5);
+                directionalLight.position.set(5, 10, 7);
+                directionalLight.castShadow = true;
+                this.scene.add(directionalLight);
+                
+                // 创建水下聚光灯
+                const spotlight = new THREE.SpotLight(0x44a08d, 0.8, 50, Math.PI / 6, 0.2, 2);
+                spotlight.position.set(0, 15, 0);
+                spotlight.target.position.set(0, 0, 0);
+                this.scene.add(spotlight);
+                this.scene.add(spotlight.target);
                 
                 // 创建海床
                 this.createSeaBed();
                 
-                // 创建海草
-                this.createSeaweeds();
+                // 创建海草（异步加载纹理）
+                await this.createSeaweeds();
                 
-                // 创建气泡
+                // 创建气泡群
                 this.createBubbles();
                 
-                // 绑定事件
-                this.bindEvents();
+                // 创建水面效果
+                this.createWaterEffect();
                 
-                // 开始动画
-                this.animate();
-                
-                // 隐藏加载界面
-                setTimeout(() => {
-                    this.hideLoading();
-                }, 1000);
+                // 更新加载进度
+                this.updateLoadingProgress(100);
             }
             
             createSeaBed() {
-                const seaBed = new PIXI.Graphics();
+                // 创建海床几何体
+                const seaBedGeometry = new THREE.PlaneGeometry(30, 30, 20, 20);
                 
-                // 绘制海床（调整位置，与海草底部对齐）
-                seaBed.rect(0, window.innerHeight - 80, window.innerWidth, 120);
-                seaBed.fill({ color: 0x1a4a3c, alpha: 1 });
-                
-                // 添加一些海底纹理
-                for (let i = 0; i < 50; i++) {
-                    seaBed.circle(
-                        Math.random() * window.innerWidth,
-                        window.innerHeight - 60 + Math.random() * 40,
-                        5 + Math.random() * 15
-                    );
-                    seaBed.fill({ color: 0x145a32, alpha: 0.5 });
+                // 添加一些高度变化
+                const positions = seaBedGeometry.attributes.position.array;
+                for (let i = 0; i < positions.length; i += 3) {
+                    const x = positions[i];
+                    const z = positions[i + 2];
+                    positions[i + 1] = -0.5 + Math.sin(x * 0.5) * Math.cos(z * 0.5) * 0.3;
                 }
+                seaBedGeometry.attributes.position.needsUpdate = true;
+                seaBedGeometry.computeVertexNormals();
                 
-                this.app.stage.addChild(seaBed);
+                // 创建材质
+                const seaBedMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x2a4d3c,
+                    roughness: 0.8,
+                    metalness: 0.1
+                });
+                
+                // 创建网格
+                const seaBed = new THREE.Mesh(seaBedGeometry, seaBedMaterial);
+                seaBed.rotation.x = -Math.PI / 2;
+                seaBed.receiveShadow = true;
+                this.scene.add(seaBed);
             }
             
-            createSeaweeds() {
+            async createSeaweeds() {
                 this.seaweeds = [];
                 
-                // 创建多个海草
-                const seaweedCount = 40;
+                // 创建程序化纹理作为备用
+                const createProceduralTexture = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 512;
+                    canvas.height = 1024;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // 创建渐变背景
+                    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    gradient.addColorStop(0, '#8ade78');      // 顶部亮绿色
+                    gradient.addColorStop(0.3, '#5dd879');   // 中上部绿色
+                    gradient.addColorStop(0.6, '#2eb85c');   // 中部绿色
+                    gradient.addColorStop(1, '#1a8a42');     // 底部深绿色
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 添加叶脉
+                    ctx.strokeStyle = 'rgba(0, 80, 40, 0.3)';
+                    ctx.lineWidth = 3;
+                    for (let i = 0; i < 8; i++) {
+                        const x = 100 + i * 45;
+                        ctx.beginPath();
+                        ctx.moveTo(x, 0);
+                        ctx.lineTo(x + Math.sin(i) * 15, canvas.height);
+                        ctx.stroke();
+                    }
+                    
+                    // 添加斑点
+                    for (let i = 0; i < 50; i++) {
+                        ctx.fillStyle = `rgba(0, 60, 30, ${0.05 + Math.random() * 0.1})`;
+                        ctx.beginPath();
+                        ctx.ellipse(
+                            Math.random() * canvas.width,
+                            Math.random() * canvas.height,
+                            5 + Math.random() * 15,
+                            30 + Math.random() * 60,
+                            0, 0, Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                    
+                    return new THREE.CanvasTexture(canvas);
+                };
                 
-                for (let i = 0; i < seaweedCount; i++) {
-                    // 在屏幕范围内随机分布
-                    const x = Math.random() * window.innerWidth;
-                    const y = window.innerHeight - 100;
+                // 从外部文件读取 Base64 纹理
+                const getBase64Texture = async () => {
+                    try {
+                        const response = await fetch('./seaweed-base64-code.txt');
+                        const text = await response.text();
+                        
+                        // 文件内容格式: return 'data:image/png;base64,...'
+                        const match = text.match(/return\s+['"](data:[^'"]+)['"]/);
+                        if (match && match[1]) {
+                            console.log('✓ 从外部文件加载 Base64 纹理成功！');
+                            return match[1];
+                        }
+                    } catch (error) {
+                        console.warn('⚠ 读取 Base64 文件失败:', error);
+                    }
+                    return null;
+                };
+                
+                // 尝试加载纹理（优先 Base64，其次外部文件，最后程序化）
+                let seaweedTexture;
+                
+                // 1. 先尝试 Base64 纹理
+                const base64Data = await getBase64Texture();
+                if (base64Data) {
+                    const textureLoader = new THREE.TextureLoader();
+                    seaweedTexture = textureLoader.load(base64Data);
+                    seaweedTexture.wrapS = seaweedTexture.wrapT = THREE.ClampToEdgeWrapping;
+                    seaweedTexture.magFilter = THREE.LinearFilter;
+                    seaweedTexture.minFilter = THREE.LinearMipmapLinearFilter;
+                    console.log('✓ 海草纹理（Base64）加载成功！');
+                } else {
+                    // 2. 尝试加载外部纹理文件
+                    const textureLoader = new THREE.TextureLoader();
+                    const fallbackTexture = createProceduralTexture();
                     
-                    // 高度设置（参考Three.js版本）
-                    const height = 150 + Math.random() * 150;
-                    
-                    const seaweed = new Seaweed(this.app, x, y, {
-                        height: height,
-                        width: 15 + Math.random() * 10,
-                        pointCount: 20
-                    });
-                    
-                    // 随机轻微旋转
-                    seaweed.rope.rotation = (Math.random() - 0.5) * 0.3;
-                    
-                    seaweed.setParams(this.params);
-                    this.seaweeds.push(seaweed);
-                    this.app.stage.addChild(seaweed.rope);
+                    try {
+                        seaweedTexture = await new Promise((resolve, reject) => {
+                            textureLoader.load(
+                                './seaweed.png',
+                                (texture) => resolve(texture),
+                                undefined,
+                                (error) => reject(error)
+                            );
+                        });
+                        
+                        seaweedTexture.wrapS = seaweedTexture.wrapT = THREE.ClampToEdgeWrapping;
+                        seaweedTexture.magFilter = THREE.LinearFilter;
+                        seaweedTexture.minFilter = THREE.LinearMipmapLinearFilter;
+                        console.log('✓ 海草纹理（PNG文件）加载成功！');
+                    } catch (error) {
+                        // 3. 加载失败，使用程序化纹理
+                        console.warn('⚠ 海草纹理加载失败，使用程序化纹理:', error);
+                        seaweedTexture = fallbackTexture;
+                    }
                 }
+                
+                // 创建海草材质（使用纹理）
+                const seaweedMaterial = new THREE.ShaderMaterial({
+                    uniforms: {
+                        time: { value: 0 },
+                        currentStrength: { value: this.params.currentStrength },
+                        swayFrequency: { value: this.params.swayFrequency },
+                        flexibility: { value: this.params.flexibility },
+                        seaweedTexture: { value: seaweedTexture },
+                        underwaterColor: { value: new THREE.Color(0x2060a0) },
+                        lightIntensity: { value: 1.2 }
+                    },
+                    vertexShader: `
+                        uniform float time;
+                        uniform float currentStrength;
+                        uniform float swayFrequency;
+                        uniform float flexibility;
+                        
+                        varying vec2 vUv;
+                        varying vec3 vPosition;
+                        varying vec3 vNormal;
+                        
+                        void main() {
+                            vUv = uv;
+                            
+                            vec3 pos = position;
+                            
+                            // --- 保持原有物理摆动计算 ---
+                            float sway = sin(time * swayFrequency + pos.y * 2.0) * currentStrength * flexibility;
+                            float turbulence = sin(time * 1.5 + pos.x * 2.0 + pos.y * 3.0) * 0.2;
+                            turbulence += cos(time * 2.0 + pos.z * 2.0 + pos.y * 1.5) * 0.15;
+                            float heightFactor = pos.y;
+                            float totalSway = (sway + turbulence) * heightFactor;
+                            pos.x += totalSway * 0.5;
+                            pos.z += totalSway * 0.3;
+                            // --- 计算结束 ---
+                            
+                            vPosition = pos;
+                            vNormal = normalize(normalMatrix * normal);
+                            
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform sampler2D seaweedTexture;
+                        uniform vec3 underwaterColor;
+                        uniform float lightIntensity;
+                        
+                        varying vec2 vUv;
+                        varying vec3 vPosition;
+                        varying vec3 vNormal;
+                        
+                        void main() {
+                            // 1. 从纹理采样颜色
+                            vec4 texColor = texture2D(seaweedTexture, vUv);
+                            
+                            // 2. 如果纹理加载失败，使用纯绿色
+                            if (length(texColor.rgb) < 0.01) {
+                                texColor = vec4(0.4, 0.7, 0.3, 1.0);
+                            }
+                            
+                            // 3. 基础颜色增强
+                            vec3 baseColor = texColor.rgb * 1.2; // 增强颜色亮度
+                            
+                            // 4. 添加环境光照
+                            float ambient = 0.6;
+                            vec3 finalColor = baseColor * ambient;
+                            
+                            // 5. 添加深度色调（轻微的蓝绿色）
+                            float depthFactor = clamp(vPosition.y / 3.0, 0.0, 1.0);
+                            vec3 waterTint = mix(underwaterColor * 0.3, vec3(1.0), depthFactor);
+                            finalColor *= waterTint;
+                            
+                            // 6. 增加整体亮度
+                            finalColor *= lightIntensity;
+                            
+                            // 7. 确保颜色不太暗
+                            finalColor = max(finalColor, vec3(0.15, 0.2, 0.15));
+                            
+                            // 8. 获取透明度
+                            float alpha = max(texColor.a, 0.7); // 确保有透明度
+                            
+                            gl_FragColor = vec4(finalColor, alpha);
+                        }
+                    `,
+                    transparent: true,
+                    side: THREE.DoubleSide
+                });
+                
+                // 生成海草实例
+                const seaweedCount = 25;
+                for (let i = 0; i < seaweedCount; i++) {
+                    this.createSingleSeaweedWithTexture(seaweedMaterial, i);
+                }
+            }
+            
+            createSingleSeaweedWithTexture(material, index) {
+                // 使用平面几何体，宽度0.5，高度3
+                const seaweedGeometry = new THREE.PlaneGeometry(0.5, 3, 1, 16);
+                
+                // 设置位置
+                const angle = (index / 25) * Math.PI * 2;
+                const radius = 2 + Math.random() * 6;
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                
+                // 设置随机旋转
+                const rotation = Math.random() * Math.PI * 2;
+                
+                // 创建材质副本
+                const seaweed = new THREE.Mesh(seaweedGeometry, material.clone());
+                seaweed.position.set(x, 1.5, z);
+                seaweed.rotation.y = rotation;
+                
+                // 存储数据
+                this.seaweeds.push({
+                    mesh: seaweed,
+                    material: seaweed.material,
+                    swayOffset: Math.random() * Math.PI * 2
+                });
+                
+                this.scene.add(seaweed);
             }
             
             createBubbles() {
+                // 创建气泡几何体
+                const bubbleGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+                const bubbleMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x88ccff,
+                    transparent: true,
+                    opacity: 0.6
+                });
+                
                 this.bubbles = [];
-                const bubbleCount = 35;
+                const bubbleCount = 30;
                 
                 for (let i = 0; i < bubbleCount; i++) {
-                    const bubble = new Bubble(this.app);
-                    bubble.graphics.y = Math.random() * window.innerHeight;
+                    const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
+                    
+                    // 设置位置
+                    bubble.position.set(
+                        (Math.random() - 0.5) * 20,
+                        Math.random() * 2 - 1,
+                        (Math.random() - 0.5) * 20
+                    );
+                    
+                    // 设置速度
+                    bubble.userData = {
+                        speed: 0.2 + Math.random() * 0.3,
+                        sway: (Math.random() - 0.5) * 0.1
+                    };
+                    
                     this.bubbles.push(bubble);
-                    this.app.stage.addChild(bubble.graphics);
+                    this.scene.add(bubble);
                 }
+            }
+            
+            createWaterEffect() {
+                // 创建水面
+                const waterGeometry = new THREE.PlaneGeometry(40, 40, 1, 1);
+                const waterMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x001a33,
+                    transparent: true,
+                    opacity: 0.1,
+                    side: THREE.DoubleSide
+                });
+                
+                const water = new THREE.Mesh(waterGeometry, waterMaterial);
+                water.rotation.x = -Math.PI / 2;
+                water.position.y = 8;
+                this.scene.add(water);
+                
+                // 创建水下体积光
+                const volumeGeometry = new THREE.BoxGeometry(25, 10, 25);
+                const volumeMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x003366,
+                    transparent: true,
+                    opacity: 0.05,
+                    side: THREE.BackSide
+                });
+                
+                const waterVolume = new THREE.Mesh(volumeGeometry, volumeMaterial);
+                waterVolume.position.y = 3;
+                this.scene.add(waterVolume);
+            }
+            
+            updateSeaweeds(deltaTime) {
+                const time = performance.now() * 0.001;
+                
+                this.seaweeds.forEach((seaweed, index) => {
+                    const material = seaweed.material;
+                    
+                    // 更新着色器 uniform
+                    material.uniforms.time.value = time + seaweed.swayOffset;
+                    material.uniforms.currentStrength.value = this.params.currentStrength;
+                    material.uniforms.swayFrequency.value = this.params.swayFrequency;
+                    material.uniforms.flexibility.value = this.params.flexibility;
+                    
+                    // 光照脉冲效果
+                    const lightPulse = 0.9 + Math.sin(time * 0.5) * 0.1;
+                    material.uniforms.lightIntensity.value = lightPulse;
+                    
+                    // 细微的随机旋转
+                    seaweed.mesh.rotation.y += Math.sin(time + index) * 0.01 * deltaTime;
+                });
+            }
+            
+            updateBubbles(deltaTime) {
+                const time = performance.now() * 0.001;
+                
+                this.bubbles.forEach((bubble, index) => {
+                    // 向上运动
+                    bubble.position.y += bubble.userData.speed * deltaTime;
+                    
+                    // 细微的水平摆动
+                    bubble.position.x += Math.sin(time + index) * bubble.userData.sway * deltaTime;
+                    bubble.position.z += Math.cos(time + index) * bubble.userData.sway * deltaTime;
+                    
+                    // 气泡大小变化
+                    const scale = 1 + Math.sin(time * 2 + index) * 0.1;
+                    bubble.scale.setScalar(scale);
+                    
+                    // 重置超出范围的气泡
+                    if (bubble.position.y > 8) {
+                        bubble.position.y = Math.random() * 2 - 1;
+                        bubble.position.x = (Math.random() - 0.5) * 20;
+                        bubble.position.z = (Math.random() - 0.5) * 20;
+                    }
+                });
             }
             
             bindEvents() {
@@ -589,115 +696,82 @@
                 window.addEventListener('resize', () => this.onWindowResize());
                 
                 // 控制滑块
-                document.getElementById('currentStrength').addEventListener('input', (e) => {
+                const currentSlider = document.getElementById('currentStrength');
+                const swaySlider = document.getElementById('swayFrequency');
+                const flexSlider = document.getElementById('flexibility');
+                
+                currentSlider.addEventListener('input', (e) => {
                     this.params.currentStrength = parseFloat(e.target.value);
                     document.getElementById('currentValue').textContent = e.target.value;
-                    this.updateSeaweedParams();
                 });
                 
-                document.getElementById('swayFrequency').addEventListener('input', (e) => {
+                swaySlider.addEventListener('input', (e) => {
                     this.params.swayFrequency = parseFloat(e.target.value);
                     document.getElementById('swayValue').textContent = e.target.value;
-                    this.updateSeaweedParams();
                 });
                 
-                document.getElementById('flexibility').addEventListener('input', (e) => {
+                flexSlider.addEventListener('input', (e) => {
                     this.params.flexibility = parseFloat(e.target.value);
                     document.getElementById('flexValue').textContent = e.target.value;
-                    this.updateSeaweedParams();
-                });
-                
-                // 鼠标拖拽交互
-                this.isDragging = false;
-                this.lastMouseY = 0;
-                
-                this.app.canvas.addEventListener('mousedown', (e) => {
-                    this.isDragging = true;
-                    this.lastMouseY = e.clientY;
-                });
-                
-                this.app.canvas.addEventListener('mousemove', (e) => {
-                    if (this.isDragging) {
-                        const deltaY = e.clientY - this.lastMouseY;
-                        this.params.currentStrength = Math.max(0, Math.min(1, this.params.currentStrength + deltaY * 0.005));
-                        document.getElementById('currentStrength').value = this.params.currentStrength;
-                        document.getElementById('currentValue').textContent = this.params.currentStrength.toFixed(1);
-                        this.updateSeaweedParams();
-                        this.lastMouseY = e.clientY;
-                    }
-                });
-                
-                this.app.canvas.addEventListener('mouseup', () => {
-                    this.isDragging = false;
-                });
-                
-                this.app.canvas.addEventListener('mouseleave', () => {
-                    this.isDragging = false;
-                });
-            }
-            
-            updateSeaweedParams() {
-                this.seaweeds.forEach(seaweed => {
-                    seaweed.setParams(this.params);
                 });
             }
             
             onWindowResize() {
-                // PixiJS 会自动处理 resize
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            
+            updateFPS() {
+                this.frameCount++;
+                const now = performance.now();
+                const elapsed = now - this.lastFpsUpdate;
+                
+                if (elapsed >= 1000) {
+                    const fps = Math.round((this.frameCount * 1000) / elapsed);
+                    this.fpsCounter.textContent = fps;
+                    this.frameCount = 0;
+                    this.lastFpsUpdate = now;
+                }
             }
             
             animate() {
-                const time = performance.now() * 0.001;
+                requestAnimationFrame(() => this.animate());
+                
+                const deltaTime = 0.016; // 固定时间步长
+                
+                // 更新控制器
+                this.controls.update();
+                
+                // 更新海草
+                this.updateSeaweeds(deltaTime);
+                
+                // 更新气泡
+                this.updateBubbles(deltaTime);
                 
                 // 更新 FPS
                 this.updateFPS();
                 
-                // 更新海草
-                this.seaweeds.forEach(seaweed => {
-                    seaweed.update(time);
-                });
-                
-                // 更新气泡
-                this.bubbles.forEach(bubble => {
-                    bubble.update();
-                });
-                
-                // 继续动画循环
-                requestAnimationFrame(() => this.animate());
+                // 渲染场景
+                this.renderer.render(this.scene, this.camera);
             }
             
-            updateFPS() {
-                if (!this.lastFrameTime) {
-                    this.lastFrameTime = performance.now();
-                    this.frameCount = 0;
-                    return;
-                }
-                
-                this.frameCount++;
-                const now = performance.now();
-                const elapsed = now - this.lastFrameTime;
-                
-                if (elapsed >= 1000) {
-                    const fps = Math.round((this.frameCount * 1000) / elapsed);
-                    document.getElementById('fps').textContent = fps;
-                    this.frameCount = 0;
-                    this.lastFrameTime = now;
-                }
+            updateLoadingProgress(progress) {
+                this.loadingProgress.style.width = `${progress}%`;
             }
             
             hideLoading() {
-                const loading = document.getElementById('loading');
-                loading.style.opacity = '0';
-                loading.style.pointerEvents = 'none';
+                this.loading.style.opacity = '0';
+                this.loading.style.pointerEvents = 'none';
                 setTimeout(() => {
-                    loading.style.display = 'none';
+                    this.loading.style.display = 'none';
                 }, 500);
             }
         }
         
         // 初始化场景
         window.addEventListener('DOMContentLoaded', () => {
-            new UnderwaterScene();
+            new SeaweedScene();
         });
     </script>
 </body>
