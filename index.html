@@ -1,1034 +1,843 @@
 <!DOCTYPE html>
-<html class="no-cursor">
+<html lang="zh-CN">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimal-ui, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Nomadic Tribe - makemepulse</title>
-    <link rel="stylesheet" type="text/css" href="./main.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixiJS 高级海草动态模拟</title>
     <style>
-        /* Custom cursor */
-        .cursor {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 150px;
-            height: 150px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #001122 0%, #003344 100%);
+            color: #e6f7ff;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        #container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
             z-index: 100;
-            pointer-events: none;
-            will-change: transform;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.3s, height 0.3s;
+            background: rgba(0, 20, 40, 0.8);
+            padding: 20px 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            max-width: 350px;
         }
-        .cursor::before {
-            content: '';
+        
+        h1 {
+            font-size: 1.6rem;
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        
+        p {
+            font-size: 0.95rem;
+            color: #a8d8ff;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .feature-list {
+            margin-top: 15px;
+            padding-left: 20px;
+        }
+        
+        .feature-list li {
+            color: #7ec8e3;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .controls {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 8px;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0, 20, 40, 0.8);
+            padding: 20px 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #4ecdc4;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .control-slider {
+            width: 220px;
             height: 8px;
-            background: #fff;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        .control-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: transform 0.1s;
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(78, 205, 196, 0.5);
         }
-        .cursor.drag-state::before {
-            transform: translate(-50%, -50%) scale(1.5);
+        
+        .control-value {
+            font-size: 0.9rem;
+            color: #44a08d;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 12px;
         }
-        .cursor.holding {
-            width: 200px;
-            height: 200px;
-        }
-        .cursor.holding::before {
-            transform: translate(-50%, -50%) scale(2);
-            background: #f8f4ec;
-        }
-
-        /* Custom cursor text */
-        .cursor .text {
+        
+        .stats {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            color: #000;
-            font-family: Gotham, sans-serif;
-            font-weight: 500;
-            text-align: center;
-            transform: translateX(-50%) translateY(-50%) translateZ(0);
-            z-index: 101;
-            opacity: 0;
-            font-size: 0.8em;
-            transition: opacity 0.25s;
-        }
-        .cursor .text.txt-visible {
-            transition-delay: 0.15s;
-            opacity: 1;
-        }
-        .cursor.holding .text {
-            opacity: 0;
-        }
-
-        /* Event display panel */
-        .event-panel {
-            position: fixed;
             top: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 20px;
-            font-family: monospace;
-            font-size: 12px;
-            z-index: 200;
-            border-radius: 8px;
-            min-width: 200px;
+            z-index: 100;
+            background: rgba(0, 20, 40, 0.8);
+            padding: 15px 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(78, 205, 196, 0.3);
         }
-        .event-panel h3 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-            color: #f8f4ec;
+        
+        .stat-item {
+            text-align: center;
         }
-        .event-panel .event-item {
-            margin: 5px 0;
-            padding: 5px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 3px;
-            transition: background 0.2s;
+        
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .event-panel .event-item.active {
-            background: rgba(100, 200, 255, 0.3);
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: #a8d8ff;
+            margin-top: 5px;
         }
-
-        /* Particle canvas */
-        #particle-canvas {
+        
+        .loading {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
-            pointer-events: none;
+            background: #001122;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
-
-        /* Landing section */
-        .landing {
-            position: absolute;
-            display: block;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        
+        .loading-bar {
+            width: 400px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
             overflow: hidden;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            margin-top: 30px;
         }
-
-        .landing__background {
-            position: absolute;
-            width: 100%;
+        
+        .loading-progress {
             height: 100%;
-            top: 0;
-            left: 0;
-            opacity: 1;
-            will-change: transform;
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+            width: 0%;
+            transition: width 0.4s ease;
         }
-
-        .landing__blue__background {
-            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
-        }
-
-        .landing__title {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            white-space: nowrap;
-            z-index: 10;
-            transform: translate(-50%, -50%);
-        }
-
-        .landing__title h1 {
-            font-family: Gotham, sans-serif;
-            font-weight: 700;
-            font-size: 4vw;
-            color: #f8f4ec;
-            letter-spacing: 0.5em;
-            text-transform: uppercase;
-            opacity: 0;
-            animation: titleFadeIn 2s ease forwards;
-        }
-
-        @keyframes titleFadeIn {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Button styles */
-        .button-xp {
-            position: relative;
-            display: block;
-            transform: translateZ(0);
-            width: 175px;
-            height: 58px;
-            user-select: none;
-            cursor: pointer;
-            margin: 30px auto;
-        }
-
-        .button__img-container, .button__inner {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .button__img {
-            position: absolute;
-            top: 0;
-            height: 100%;
-            transition: transform 0.5s;
-        }
-
-        .button__img--left {
-            left: 0;
-            width: 19.59%;
-            background: linear-gradient(90deg, #e94560 0%, #c23152 100%);
-            border-radius: 10px 0 0 10px;
-            transform: translateX(0) scaleX(1);
-        }
-
-        .button__img--middle {
-            width: 62.5%;
-            left: 50%;
-            background: linear-gradient(180deg, #e94560 0%, #c23152 100%);
-            transform: translateX(-50%) scaleX(1);
-        }
-
-        .button__img--right {
-            right: 0;
-            width: 19.59%;
-            background: linear-gradient(270deg, #e94560 0%, #c23152 100%);
-            border-radius: 0 10px 10px 0;
-            transform: translateX(0) scaleX(1);
-        }
-
-        .button__text {
-            color: #f8f4ec;
-            font-family: Gotham, sans-serif;
-            font-weight: 700;
-            font-size: 12px;
-            text-transform: uppercase;
-            position: absolute;
-            white-space: nowrap;
-            top: 50%;
-            left: 50%;
-            transform: translateX(-50%) translateY(-50%);
-            z-index: 10;
-        }
-
-        /* Button hover effects */
-        .button-xp:hover .button__img--left {
-            transform: translateX(-36%) scaleX(1);
-        }
-        .button-xp:hover .button__img--middle {
-            transform: translateX(-50%) scaleX(1.3);
-        }
-        .button-xp:hover .button__img--right {
-            transform: translateX(36%) scaleX(1);
-        }
-        .button-xp:hover .button__img__img--fg {
-            opacity: 1;
-        }
-
-        .button__img__img--fg {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            transition: opacity 0.4s;
-            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
-        }
-
-        /* Audio button */
-        .audio-btn {
-            width: 32px;
-            height: 32px;
-            position: absolute;
-            bottom: 40px;
-            right: 40px;
-            z-index: 10;
-            background: linear-gradient(135deg, #e94560 0%, #c23152 100%);
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .audio-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
-        }
-        .audio-btn.muted {
-            background: linear-gradient(135deg, #555 0%, #333 100%);
-        }
-        .audio-btn::before, .audio-btn::after {
-            content: '';
-            position: absolute;
-            background: #fff;
-        }
-        .audio-btn::before {
-            width: 3px;
-            height: 12px;
-        }
-        .audio-btn.muted::before {
-            display: none;
-        }
-        .audio-btn::after {
-            width: 10px;
-            height: 10px;
-            border: 2px solid #fff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            transform: rotate(-45deg);
-        }
-
-        /* Audio text */
-        .audio-text {
-            pointer-events: none;
-            width: 100%;
-            position: absolute;
-            left: 0;
-            bottom: 40px;
-            padding-right: 80px;
-            text-align: right;
-            font-size: 12px;
-            transition: opacity 0.5s;
-            opacity: 1;
-            color: #f8f4ec;
-            font-family: Gotham, sans-serif;
-        }
-        .audio-text.is-hidden {
-            opacity: 0;
-        }
-
-        /* Mouse trail */
-        .trail-dot {
-            position: fixed;
-            width: 6px;
-            height: 6px;
-            background: #e94560;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 50;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        /* Interaction areas */
-        .interaction-area {
-            position: absolute;
-            padding: 40px;
-            color: #f8f4ec;
-            font-family: Gotham, sans-serif;
-            z-index: 10;
-        }
-        .interaction-area.top-left { top: 5%; left: 5%; }
-        .interaction-area.top-right { top: 5%; right: 5%; text-align: right; }
-        .interaction-area.bottom-left { bottom: 5%; left: 5%; }
-        .interaction-area.bottom-right { bottom: 5%; right: 5%; text-align: right; }
-
-        .interaction-area h2 {
-            font-size: 1.5vw;
-            margin-bottom: 15px;
-            color: #e94560;
-        }
-
-        .interaction-area p {
-            font-size: 0.9vw;
-            opacity: 0.8;
-            line-height: 1.6;
-        }
-
-        /* Scroll indicator */
-        .scroll-indicator {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #f8f4ec;
-            font-family: Gotham, sans-serif;
-            font-size: 12px;
-            opacity: 0.6;
-            animation: bounce 2s infinite;
-            z-index: 10;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-10px); }
-        }
-
-        /* Click ripple effect */
-        .ripple {
-            position: fixed;
-            border-radius: 50%;
-            background: rgba(233, 69, 96, 0.4);
-            pointer-events: none;
-            transform: scale(0);
-            animation: rippleEffect 0.6s ease-out forwards;
-            z-index: 99;
-        }
-
-        @keyframes rippleEffect {
-            to {
-                transform: scale(4);
-                opacity: 0;
+        
+        @media (max-width: 768px) {
+            #info, .controls, .stats {
+                padding: 12px;
+                max-width: calc(100vw - 40px);
             }
-        }
-
-        /* Logo */
-        .landing__logo {
-            position: absolute;
-            top: 40px;
-            left: 40px;
-            z-index: 10;
-        }
-        .landing__logo-text {
-            font-family: Gotham, sans-serif;
-            font-weight: 700;
-            font-size: 14px;
-            color: #f8f4ec;
-            letter-spacing: 0.3em;
-        }
-
-        /* Interactive blocks */
-        .landing__center-block {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 200px;
-            height: 200px;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, rgba(233, 69, 96, 0.2) 0%, rgba(15, 52, 96, 0.8) 100%);
-            border: 2px solid rgba(233, 69, 96, 0.5);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            z-index: 10;
-        }
-        .landing__center-block:hover {
-            transform: translate(-50%, -50%) scale(1.05);
-            box-shadow: 0 0 40px rgba(233, 69, 96, 0.4);
-        }
-        .landing__center-block span {
-            font-family: Gotham, sans-serif;
-            color: #f8f4ec;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-        }
-
-        /* Progress bar */
-        .progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #e94560, #c23152);
-            z-index: 300;
-            transition: width 0.1s;
-        }
-
-        /* Coordinates display */
-        .coords-display {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: #f8f4ec;
-            padding: 10px 15px;
-            font-family: monospace;
-            font-size: 11px;
-            z-index: 200;
-            border-radius: 5px;
+            
+            .control-slider {
+                width: 160px;
+            }
         }
     </style>
 </head>
-<body class="windows desktop chrome landscape">
-    <!-- Progress bar -->
-    <div class="progress-bar" id="progressBar"></div>
-
-    <!-- Custom cursor -->
-    <div class="cursor" id="cursor">
-        <span class="text" id="cursorText">Explore</span>
+<body>
+    <div id="container"></div>
+    
+    <div id="info">
+        <h1>PixiJS 高级海草模拟</h1>
+        <p>基于 PixiJS MeshRope 的真实物理模拟</p>
+        <p>支持 GPU 加速渲染，性能卓越</p>
+        
+        <ul class="feature-list">
+            <li>MeshRope 绳索动力学</li>
+            <li>自定义 GLSL 着色器</li>
+            <li>水下尘埃粒子滤镜</li>
+            <li>实时物理参数调节</li>
+        </ul>
     </div>
-
-    <!-- Event panel -->
-    <div class="event-panel" id="eventPanel">
-        <h3>Mouse Activity Events</h3>
-        <div class="event-item" id="event-mousemove">mousemove: <span>-</span></div>
-        <div class="event-item" id="event-mousedown">mousedown: <span>-</span></div>
-        <div class="event-item" id="event-mouseup">mouseup: <span>-</span></div>
-        <div class="event-item" id="event-click">click: <span>-</span></div>
-        <div class="event-item" id="event-dblclick">dblclick: <span>-</span></div>
-        <div class="event-item" id="event-mouseenter">mouseenter: <span>-</span></div>
-        <div class="event-item" id="event-mouseleave">mouseleave: <span>-</span></div>
-        <div class="event-item" id="event-touchstart">touchstart: <span>-</span></div>
-        <div class="event-item" id="event-touchend">touchend: <span>-</span></div>
-        <div class="event-item" id="event-touchmove">touchmove: <span>-</span></div>
-        <div class="event-item" id="event-wheel">wheel: <span>-</span></div>
-        <div class="event-item" id="event-scroll">scroll: <span>-</span></div>
-        <div class="event-item" id="event-keydown">keydown: <span>-</span></div>
-    </div>
-
-    <!-- Coordinates display -->
-    <div class="coords-display" id="coordsDisplay">
-        X: 0 | Y: 0 | VelX: 0 | VelY: 0 | Speed: 0
-    </div>
-
-    <!-- Particle canvas -->
-    <canvas id="particle-canvas"></canvas>
-
-    <!-- Landing page -->
-    <div class="landing" id="landing">
-        <!-- Logo -->
-        <div class="landing__logo">
-            <span class="landing__logo-text">MAKE ME PULSE</span>
+    
+    <div class="controls">
+        <div class="control-group">
+            <label class="control-label">水流强度: <span id="currentValue" class="control-value">0.5</span></label>
+            <input type="range" class="control-slider" id="currentStrength" min="0" max="1" value="0.5" step="0.1">
         </div>
-
-        <!-- Interaction areas -->
-        <div class="interaction-area top-left" id="areaTopLeft">
-            <h2>Drag Me</h2>
-            <p>Click and drag anywhere to create particles. Watch the cursor change!</p>
+        
+        <div class="control-group">
+            <label class="control-label">摆动频率: <span id="swayValue" class="control-value">1.0</span></label>
+            <input type="range" class="control-slider" id="swayFrequency" min="0.1" max="2" value="1.0" step="0.1">
         </div>
-
-        <div class="interaction-area top-right" id="areaTopRight">
-            <h2>Scroll</h2>
-            <p>Scroll to see the progress bar change and particles react.</p>
+        
+        <div class="control-group">
+            <label class="control-label">柔软度: <span id="flexValue" class="control-value">0.7</span></label>
+            <input type="range" class="control-slider" id="flexibility" min="0.1" max="1" value="0.7" step="0.1">
         </div>
-
-        <div class="interaction-area bottom-left" id="areaBottomLeft">
-            <h2>Click</h2>
-            <p>Single or double click to see ripple effects and sound toggle.</p>
-        </div>
-
-        <div class="interaction-area bottom-right" id="areaBottomRight">
-            <h2>Touch</h2>
-            <p>On touch devices, tap and swipe to interact with the scene.</p>
-        </div>
-
-        <!-- Center interactive block -->
-        <div class="landing__center-block" id="centerBlock">
-            <span>Interactive</span>
-        </div>
-
-        <!-- Title -->
-        <div class="landing__title">
-            <h1>Nomadic Tribe</h1>
-        </div>
-
-        <!-- Button -->
-        <div class="button-xp" id="mainButton">
-            <div class="button__inner">
-                <div class="button__img button__img--left">
-                    <div class="button__img__img button__img__img--bg"></div>
-                    <div class="button__img__img button__img__img--fg"></div>
-                </div>
-                <div class="button__img button__img--middle">
-                    <div class="button__img__img button__img__img--bg"></div>
-                    <div class="button__img__img button__img__img--fg"></div>
-                </div>
-                <div class="button__img button__img--right">
-                    <div class="button__img__img button__img__img--bg"></div>
-                    <div class="button__img__img button__img__img--fg"></div>
-                </div>
-            </div>
-            <div class="button__text">Start Experience</div>
-            <div class="button__borders"></div>
-        </div>
-
-        <!-- Audio button -->
-        <div class="audio-btn" id="audioBtn" title="Toggle Sound"></div>
-        <div class="audio-text" id="audioText">
-            <span>Click anywhere to enable sound</span>
-        </div>
-
-        <!-- Scroll indicator -->
-        <div class="scroll-indicator" id="scrollIndicator">
-            Scroll to explore
+        
+        <div class="control-group">
+            <label class="control-label">粒子效果: <span id="particleValue" class="control-value">0.5</span></label>
+            <input type="range" class="control-slider" id="particleEffect" min="0" max="1" value="0.5" step="0.1">
         </div>
     </div>
-
-    <!-- Trail dots container -->
-    <div id="trailContainer"></div>
-
-    <script>
-        // =============================================
-        // MOUSE ACTIVITY DETECTION - ALL EVENTS
-        // =============================================
-
-        (function() {
-            'use strict';
-
-            // State
-            let mouseX = 0, mouseY = 0;
-            let prevMouseX = 0, prevMouseY = 0;
-            let velX = 0, velY = 0;
-            let isMouseDown = false;
-            let isDragging = false;
-            let isHolding = false;
-            let holdTimer = null;
-            let lastClickTime = 0;
-            let touchCount = 0;
-
-            // DOM Elements
-            const cursor = document.getElementById('cursor');
-            const cursorText = document.getElementById('cursorText');
-            const progressBar = document.getElementById('progressBar');
-            const coordsDisplay = document.getElementById('coordsDisplay');
-            const audioBtn = document.getElementById('audioBtn');
-            const audioText = document.getElementById('audioText');
-            const centerBlock = document.getElementById('centerBlock');
-            const mainButton = document.getElementById('mainButton');
-            const landing = document.getElementById('landing');
-            const scrollIndicator = document.getElementById('scrollIndicator');
-            const particleCanvas = document.getElementById('particle-canvas');
-            const trailContainer = document.getElementById('trailContainer');
-
-            // Canvas setup
-            const ctx = particleCanvas.getContext('2d');
-            let particles = [];
-
-            function resizeCanvas() {
-                particleCanvas.width = window.innerWidth;
-                particleCanvas.height = window.innerHeight;
+    
+    <div class="stats">
+        <div class="stat-item">
+            <div class="stat-value" id="fps">0</div>
+            <div class="stat-label">FPS</div>
+        </div>
+    </div>
+    
+    <div class="loading" id="loading">
+        <h1>正在初始化 PixiJS 海草场景...</h1>
+        <div class="loading-bar">
+            <div class="loading-progress" id="loadingProgress"></div>
+        </div>
+    </div>
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "pixi.js": "https://cdn.jsdelivr.net/npm/pixi.js@8.2.6/dist/pixi.min.mjs"
             }
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
-
-            // =============================================
-            // PARTICLE SYSTEM
-            // =============================================
-
-            class Particle {
-                constructor(x, y, vx, vy) {
-                    this.x = x;
-                    this.y = y;
-                    this.vx = vx;
-                    this.vy = vy;
-                    this.life = 1;
-                    this.decay = 0.02 + Math.random() * 0.02;
-                    this.size = 3 + Math.random() * 5;
-                    this.hue = Math.random() * 60 + 340; // Red to pink range
+        }
+    </script>
+    
+    <script type="module">
+        import * as PIXI from 'pixi.js';
+        
+        // ========================================
+        // 自定义尘埃粒子滤镜
+        // ========================================
+        class UnderwaterDustFilter extends PIXI.Filter {
+            constructor(options = {}) {
+                const {
+                    count = 80,
+                    speed = 0.5,
+                    size = 0.006,
+                    alpha = 0.4,
+                    color = 0xaaddff
+                } = options;
+                
+                const vertexShader = `
+                    in vec2 aPosition;
+                    out vec2 vTextureCoord;
+                    
+                    uniform vec4 uInputSize;
+                    uniform vec4 uOutputFrame;
+                    uniform vec4 uOutputTexture;
+                    
+                    vec4 filterVertexPosition(void) {
+                        vec2 position = aPosition * uOutputFrame.zw + uOutputFrame.xy;
+                        position.x = position.x * (2.0 / uOutputTexture.x) - 1.0;
+                        position.y = position.y * (2.0 * uOutputTexture.z / uOutputTexture.y) - uOutputTexture.z;
+                        return vec4(position, 0.0, 1.0);
+                    }
+                    
+                    vec2 filterTextureCoord(void) {
+                        return aPosition * (uOutputFrame.zw * uInputSize.zw);
+                    }
+                    
+                    void main(void) {
+                        gl_Position = filterVertexPosition();
+                        vTextureCoord = filterTextureCoord();
+                    }
+                `;
+                
+                const fragmentShader = `
+                    in vec2 vTextureCoord;
+                    out vec4 finalColor;
+                    
+                    uniform sampler2D uTexture;
+                    uniform vec4 uInputSize;
+                    uniform vec3 uColor;
+                    uniform float uTime;
+                    uniform float uCount;
+                    uniform float uSpeed;
+                    uniform float uSize;
+                    uniform float uAlpha;
+                    
+                    float hash(vec2 p) {
+                        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+                    }
+                    
+                    void main() {
+                        vec4 original = texture(uTexture, vTextureCoord);
+                        float dustAccum = 0.0;
+                        float aspect = uInputSize.x / uInputSize.y;
+                        
+                        for (int i = 0; i < 150; i++) {
+                            if (float(i) >= uCount) break;
+                            float id = float(i) + 0.5;
+                            float rx = hash(vec2(id, 0.0));
+                            float ry = hash(vec2(id, 1.0));
+                            float rs = hash(vec2(id, 2.0));
+                            float rsp = hash(vec2(id, 3.0));
+                            float rph = hash(vec2(id, 4.0));
+                            float rbr = hash(vec2(id, 5.0));
+                            
+                            float t = uTime * uSpeed * (0.3 + rsp * 0.7);
+                            
+                            float px = fract(rx + sin(t * 0.7 + rph * 6.283) * 0.1 + cos(t * 0.3 + rph * 3.0) * 0.05);
+                            float py = fract(ry + cos(t * 0.5 + rph * 4.0) * 0.08 - t * 0.02);
+                            
+                            vec2 diff = vTextureCoord - vec2(px, py);
+                            diff.x *= aspect;
+                            float dist = length(diff);
+                            
+                            float moteSize = uSize * (0.4 + rs * 0.6);
+                            float mote = smoothstep(moteSize, moteSize * 0.1, dist);
+                            
+                            float twinkle = 0.5 + 0.5 * sin(t * 2.5 + rph * 6.283);
+                            
+                            dustAccum += mote * (0.4 + rbr * 0.6) * twinkle;
+                        }
+                        
+                        dustAccum *= uAlpha;
+                        vec3 color = original.rgb + uColor * dustAccum * original.a;
+                        finalColor = vec4(color, original.a);
+                    }
+                `;
+                
+                super({
+                    glProgram: new PIXI.GlProgram({
+                        vertex: vertexShader,
+                        fragment: fragmentShader
+                    }),
+                    resources: {
+                        underwaterDustUniforms: {
+                            uColor: { value: new Float32Array(3), type: 'vec3<f32>' },
+                            uTime: { value: 0, type: 'f32' },
+                            uCount: { value: count, type: 'f32' },
+                            uSpeed: { value: speed, type: 'f32' },
+                            uSize: { value: size, type: 'f32' },
+                            uAlpha: { value: alpha, type: 'f32' }
+                        }
+                    }
+                });
+                
+                this._color = color;
+                this._startTime = performance.now();
+                this.color = color;
+            }
+            
+            apply(filterManager, input, output, clearMode) {
+                this.resources.underwaterDustUniforms.uniforms.uTime = (performance.now() - this._startTime) / 1000;
+                filterManager.applyFilter(this, input, output, clearMode);
+            }
+            
+            get color() {
+                return this._color;
+            }
+            set color(value) {
+                this._color = value;
+                const u = this.resources.underwaterDustUniforms.uniforms;
+                u.uColor[0] = ((value >> 16) & 0xff) / 255;
+                u.uColor[1] = ((value >> 8) & 0xff) / 255;
+                u.uColor[2] = (value & 0xff) / 255;
+            }
+            
+            get alpha() {
+                return this.resources.underwaterDustUniforms.uniforms.uAlpha;
+            }
+            set alpha(value) {
+                this.resources.underwaterDustUniforms.uniforms.uAlpha = value;
+            }
+        }
+        
+        // ========================================
+        // 海草类
+        // ========================================
+        class Seaweed {
+            constructor(app, x, y, options = {}) {
+                this.app = app;
+                this.x = x;
+                this.baseY = y;
+                this.height = options.height || 200 + Math.random() * 100;
+                this.width = options.width || 15 + Math.random() * 10;
+                this.pointCount = options.pointCount || 15;
+                this.points = [];
+                this.swayOffset = Math.random() * Math.PI * 2;
+                this.baseRotation = Math.random() * Math.PI * 2;
+                
+                // 物理参数
+                this.params = {
+                    currentStrength: 0.5,
+                    swayFrequency: 1.0,
+                    flexibility: 0.7
+                };
+                
+                this.textureLoaded = false;
+                
+                this.initPoints();
+                this.createMeshRope();
+                
+                // 异步加载外部纹理
+                this.loadTexture();
+            }
+            
+            initPoints() {
+                // 创建绳索点
+                for (let i = 0; i < this.pointCount; i++) {
+                    const t = i / (this.pointCount - 1);
+                    this.points.push(new PIXI.Point(0, t * this.height));
                 }
-
-                update() {
-                    this.x += this.vx;
-                    this.y += this.vy;
-                    this.vy += 0.1; // Gravity
-                    this.life -= this.decay;
-                    this.size *= 0.98;
+            }
+            
+            async loadTexture() {
+                try {
+                    // 优先尝试使用 Base64 嵌入纹理（避免 CORS 问题）
+                    const base64Texture = this.getBase64Texture();
+                    if (base64Texture) {
+                        this.texture = PIXI.Texture.from(base64Texture);
+                        console.log('✓ 海草纹理（Base64）加载成功！');
+                        if (this.rope) {
+                            this.rope.texture = this.texture;
+                        }
+                        this.textureLoaded = true;
+                        return;
+                    }
+                    
+                    // 如果没有 Base64，尝试加载外部文件
+                    this.texture = await PIXI.Assets.load('./seaweed.png');
+                    console.log('✓ 海草纹理加载成功！');
+                    
+                    // 更新所有使用该纹理的海草
+                    if (this.rope) {
+                        this.rope.texture = this.texture;
+                    }
+                    this.textureLoaded = true;
+                } catch (error) {
+                    console.warn('⚠ 海草纹理加载失败，使用程序化纹理:', error);
+                    // 加载失败，使用程序化纹理作为备用
+                    this.texture = this.createProceduralTexture();
+                    if (this.rope) {
+                        this.rope.texture = this.texture;
+                    }
                 }
-
-                draw() {
+            }
+            
+            async getBase64Texture() {
+                // ========================================
+                // 从外部文件读取 Base64 纹理
+                // ========================================
+                try {
+                    const response = await fetch('./seaweed-base64-code.txt');
+                    const text = await response.text();
+                    
+                    // 文件内容格式: return 'data:image/png;base64,...'
+                    // 提取 return 语句后的字符串
+                    const match = text.match(/return\s+['"](data:[^'"]+)['"]/);
+                    if (match && match[1]) {
+                        console.log('✓ 从外部文件加载 Base64 纹理成功！');
+                        return match[1];
+                    }
+                } catch (error) {
+                    console.warn('⚠ 读取 Base64 文件失败:', error);
+                }
+                
+                return null; // 返回 null 表示不使用 Base64
+            }
+            
+            
+            createProceduralTexture() {
+                // 创建程序化海草纹理作为备用
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                
+                // 渐变背景
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#8ade78');      // 顶部亮绿色
+                gradient.addColorStop(0.3, '#5dd879');   // 中上部绿色
+                gradient.addColorStop(0.6, '#2eb85c');   // 中部绿色
+                gradient.addColorStop(1, '#1a8a42');     // 底部深绿色
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 添加叶脉
+                ctx.strokeStyle = 'rgba(0, 80, 40, 0.2)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2, 0);
+                ctx.lineTo(canvas.width / 2, canvas.height);
+                ctx.stroke();
+                
+                // 添加斑点纹理
+                for (let i = 0; i < 30; i++) {
+                    ctx.fillStyle = `rgba(0, 60, 30, ${0.05 + Math.random() * 0.08})`;
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fillStyle = `hsla(${this.hue}, 80%, 60%, ${this.life})`;
+                    ctx.ellipse(
+                        canvas.width / 2 + (Math.random() - 0.5) * 40,
+                        Math.random() * canvas.height,
+                        3 + Math.random() * 8,
+                        20 + Math.random() * 40,
+                        0, 0, Math.PI * 2
+                    );
                     ctx.fill();
                 }
+                
+                return PIXI.Texture.from(canvas);
             }
-
-            function createParticles(x, y, count = 10) {
-                for (let i = 0; i < count; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const speed = 2 + Math.random() * 5;
-                    const vx = Math.cos(angle) * speed + velX * 0.2;
-                    const vy = Math.sin(angle) * speed + velY * 0.2;
-                    particles.push(new Particle(x, y, vx, vy));
+            
+            createMeshRope() {
+                // 初始使用程序化纹理，加载完成后会替换
+                this.texture = this.createProceduralTexture();
+                
+                // 创建 MeshRope
+                this.rope = new PIXI.MeshRope({
+                    texture: this.texture,
+                    points: this.points
+                });
+                
+                this.rope.x = this.x;
+                this.rope.y = this.baseY;
+                this.rope.rotation = this.baseRotation;
+                
+                // 设置混合模式
+                this.rope.alpha = 0.9;
+            }
+            
+            update(time) {
+                const t = time + this.swayOffset;
+                const {
+                    currentStrength,
+                    swayFrequency,
+                    flexibility
+                } = this.params;
+                
+                // 更新每个点的位置，模拟海草摆动
+                for (let i = 1; i < this.points.length; i++) {
+                    const point = this.points[i];
+                    const baseY = (i / (this.points.length - 1)) * this.height;
+                    
+                    // 基础摆动
+                    const sway = Math.sin(t * swayFrequency + i * 0.5) * currentStrength * flexibility * 30;
+                    
+                    // 湍流效果
+                    const turbulence = Math.sin(t * 1.5 + i * 0.3) * 5 + 
+                                     Math.cos(t * 2.0 + i * 0.4) * 3;
+                    
+                    // 高度因子 - 越高摆动越大
+                    const heightFactor = i / (this.points.length - 1);
+                    
+                    // 设置新位置
+                    point.x = sway * heightFactor + turbulence * heightFactor;
+                    point.y = baseY + Math.sin(heightFactor * Math.PI) * 10;
                 }
             }
-
-            function animateParticles() {
-                ctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
-
-                for (let i = particles.length - 1; i >= 0; i--) {
-                    particles[i].update();
-                    particles[i].draw();
-
-                    if (particles[i].life <= 0) {
-                        particles.splice(i, 1);
-                    }
-                }
-
-                requestAnimationFrame(animateParticles);
+            
+            setParams(params) {
+                Object.assign(this.params, params);
             }
-            animateParticles();
-
-            // =============================================
-            // TRAIL DOTS
-            // =============================================
-
-            function createTrailDot(x, y) {
-                const dot = document.createElement('div');
-                dot.className = 'trail-dot';
-                dot.style.left = x + 'px';
-                dot.style.top = y + 'px';
-                dot.style.opacity = '0.6';
-                trailContainer.appendChild(dot);
-
+        }
+        
+        // ========================================
+        // 气泡类
+        // ========================================
+        class Bubble {
+            constructor(app) {
+                this.app = app;
+                this.graphics = new PIXI.Graphics();
+                this.reset();
+                
+                // 随机速度
+                this.speedY = 0.5 + Math.random() * 1.5;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.size = 3 + Math.random() * 8;
+            }
+            
+            reset() {
+                this.graphics.x = Math.random() * window.innerWidth;
+                this.graphics.y = window.innerHeight + Math.random() * 100;
+                this.speedY = 0.5 + Math.random() * 1.5;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.size = 3 + Math.random() * 8;
+            }
+            
+            update() {
+                this.graphics.y -= this.speedY;
+                this.graphics.x += Math.sin(this.graphics.y * 0.02) * 0.3;
+                
+                // 重置位置
+                if (this.graphics.y < -20) {
+                    this.reset();
+                }
+                
+                // 绘制气泡
+                this.graphics.clear();
+                this.graphics.circle(0, 0, this.size);
+                this.graphics.stroke({ width: 1.5, color: 0x88ccff, alpha: 0.6 });
+                this.graphics.fill({ color: 0xaaddff, alpha: 0.2 });
+            }
+        }
+        
+        // ========================================
+        // 主场景类
+        // ========================================
+        class UnderwaterScene {
+            constructor() {
+                this.params = {
+                    currentStrength: 0.5,
+                    swayFrequency: 1.0,
+                    flexibility: 0.7,
+                    particleEffect: 0.5
+                };
+                
+                this.init();
+            }
+            
+            async init() {
+                // 创建 PixiJS 应用
+                this.app = new PIXI.Application();
+                
+                await this.app.init({
+                    resizeTo: window,
+                    backgroundColor: 0x001122,
+                    antialias: true,
+                    resolution: window.devicePixelRatio || 1,
+                    autoDensity: true
+                });
+                
+                document.getElementById('container').appendChild(this.app.canvas);
+                
+                // 创建海床
+                this.createSeaBed();
+                
+                // 创建海草
+                this.createSeaweeds();
+                
+                // 创建气泡
+                this.createBubbles();
+                
+                // 添加尘埃滤镜
+                this.addDustFilter();
+                
+                // 绑定事件
+                this.bindEvents();
+                
+                // 开始动画
+                this.animate();
+                
+                // 隐藏加载界面
                 setTimeout(() => {
-                    dot.style.opacity = '0';
-                    setTimeout(() => dot.remove(), 300);
-                }, 100);
-            }
-
-            // =============================================
-            // RIPPLE EFFECT
-            // =============================================
-
-            function createRipple(x, y) {
-                const ripple = document.createElement('div');
-                ripple.className = 'ripple';
-                ripple.style.left = (x - 25) + 'px';
-                ripple.style.top = (y - 25) + 'px';
-                ripple.style.width = '50px';
-                ripple.style.height = '50px';
-                document.body.appendChild(ripple);
-
-                setTimeout(() => ripple.remove(), 600);
-            }
-
-            // =============================================
-            // EVENT DISPLAY FUNCTIONS
-            // =============================================
-
-            function showEvent(eventName, value) {
-                const eventEl = document.getElementById('event-' + eventName);
-                if (eventEl) {
-                    eventEl.classList.add('active');
-                    eventEl.querySelector('span').textContent = value;
-                    setTimeout(() => eventEl.classList.remove('active'), 200);
-                }
-            }
-
-            // =============================================
-            // CURSOR TRACKING
-            // =============================================
-
-            function updateCursor(x, y) {
-                cursor.style.left = x + 'px';
-                cursor.style.top = y + 'px';
-
-                // Calculate velocity
-                velX = x - prevMouseX;
-                velY = y - prevMouseY;
-                prevMouseX = mouseX;
-                prevMouseY = mouseY;
-                mouseX = x;
-                mouseY = y;
-
-                // Update coords display
-                const speed = Math.sqrt(velX * velX + velY * velY).toFixed(1);
-                coordsDisplay.textContent = `X: ${x | 0} | Y: ${y | 0} | VelX: ${velX.toFixed(1)} | VelY: ${velY.toFixed(1)} | Speed: ${speed}`;
-
-                // Create trail on fast movement
-                if (speed > 5 && Math.random() > 0.7) {
-                    createTrailDot(x, y);
-                }
-
-                // Create particles on drag
-                if (isDragging && Math.random() > 0.5) {
-                    createParticles(x, y, 2);
-                }
-            }
-
-            // =============================================
-            // ALL MOUSE/EVENT LISTENERS
-            // =============================================
-
-            // mousemove
-            document.addEventListener('mousemove', function(e) {
-                updateCursor(e.clientX, e.clientY);
-                showEvent('mousemove', `${e.clientX}, ${e.clientY}`);
-            });
-
-            // mousedown
-            document.addEventListener('mousedown', function(e) {
-                isMouseDown = true;
-                showEvent('mousedown', `button: ${e.button}`);
-
-                // Start hold detection
-                holdTimer = setTimeout(() => {
-                    isHolding = true;
-                    cursor.classList.add('holding');
-                    cursorText.textContent = 'Hold';
-                    createParticles(e.clientX, e.clientY, 30);
-                }, 200);
-            });
-
-            // mouseup
-            document.addEventListener('mouseup', function(e) {
-                isMouseDown = false;
-                isDragging = false;
-                isHolding = false;
-                cursor.classList.remove('holding');
-                cursorText.textContent = 'Explore';
-                showEvent('mouseup', `button: ${e.button}`);
-
-                if (holdTimer) {
-                    clearTimeout(holdTimer);
-                    holdTimer = null;
-                }
-            });
-
-            // click
-            document.addEventListener('click', function(e) {
-                showEvent('click', `${e.clientX}, ${e.clientY}`);
-                createRipple(e.clientX, e.clientY);
-
-                // Double click detection
-                const now = Date.now();
-                if (now - lastClickTime < 300) {
-                    showEvent('dblclick', `${e.clientX}, ${e.clientY}`);
-                    createParticles(e.clientX, e.clientY, 50);
-                }
-                lastClickTime = now;
-
-                // Hide audio text after first click
-                audioText.classList.add('is-hidden');
-            });
-
-            // mouseenter (entering the document)
-            document.addEventListener('mouseenter', function(e) {
-                showEvent('mouseenter', 'entered');
-                cursor.style.opacity = '1';
-            });
-
-            // mouseleave (leaving the document)
-            document.addEventListener('mouseleave', function(e) {
-                showEvent('mouseleave', 'left');
-                cursor.style.opacity = '0';
-            });
-
-            // touchstart
-            document.addEventListener('touchstart', function(e) {
-                touchCount = e.touches.length;
-                const touch = e.touches[0];
-                updateCursor(touch.clientX, touch.clientY);
-                showEvent('touchstart', `touches: ${touchCount}`);
-
-                if (touchCount >= 2) {
-                    createParticles(touch.clientX, touch.clientY, 20);
-                }
-            }, { passive: true });
-
-            // touchend
-            document.addEventListener('touchend', function(e) {
-                touchCount = e.changedTouches.length;
-                showEvent('touchend', `touches ended: ${touchCount}`);
-            });
-
-            // touchmove
-            document.addEventListener('touchmove', function(e) {
-                const touch = e.touches[0];
-                updateCursor(touch.clientX, touch.clientY);
-                showEvent('touchmove', `${touch.clientX}, ${touch.clientY}`);
-
-                if (Math.random() > 0.8) {
-                    createParticles(touch.clientX, touch.clientY, 1);
-                }
-            }, { passive: true });
-
-            // wheel
-            document.addEventListener('wheel', function(e) {
-                showEvent('wheel', `${e.deltaY > 0 ? 'down' : 'up'} (${e.deltaY})`);
-
-                // Update progress bar
-                const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-                const scrollPercent = (window.scrollY / scrollHeight) * 100;
-                progressBar.style.width = Math.min(100, Math.max(0, scrollPercent)) + '%';
-
-                // Create particles based on scroll speed
-                createParticles(mouseX, mouseY, Math.abs(e.deltaY) / 20);
-
-                // Hide scroll indicator after scrolling
-                scrollIndicator.style.opacity = '0';
-            }, { passive: true });
-
-            // scroll
-            let scrollTimeout;
-            document.addEventListener('scroll', function(e) {
-                showEvent('scroll', `Y: ${window.scrollY}`);
-
-                clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(() => {
-                    scrollIndicator.style.opacity = '0.6';
+                    this.hideLoading();
                 }, 1000);
-            });
-
-            // keydown
-            document.addEventListener('keydown', function(e) {
-                showEvent('keydown', e.key);
-
-                // Create particles on key press
-                createParticles(window.innerWidth / 2, window.innerHeight / 2, 5);
-
-                // Space bar creates big particle burst
-                if (e.code === 'Space') {
-                    createParticles(window.innerWidth / 2, window.innerHeight / 2, 100);
-                    e.preventDefault();
-                }
-            });
-
-            // =============================================
-            // DRAG STATE
-            // =============================================
-
-            let dragStartX, dragStartY;
-
-            document.addEventListener('mousedown', function(e) {
-                dragStartX = e.clientX;
-                dragStartY = e.clientY;
-            });
-
-            document.addEventListener('mousemove', function(e) {
-                if (isMouseDown && !isHolding) {
-                    const distance = Math.sqrt(
-                        Math.pow(e.clientX - dragStartX, 2) +
-                        Math.pow(e.clientY - dragStartY, 2)
+            }
+            
+            createSeaBed() {
+                const seaBed = new PIXI.Graphics();
+                
+                // 绘制海床
+                seaBed.rect(0, window.innerHeight - 50, window.innerWidth, 100);
+                seaBed.fill({ color: 0x1a4a3c, alpha: 1 });
+                
+                // 添加一些海底纹理
+                for (let i = 0; i < 50; i++) {
+                    seaBed.circle(
+                        Math.random() * window.innerWidth,
+                        window.innerHeight - 40 + Math.random() * 30,
+                        5 + Math.random() * 15
                     );
-
-                    if (distance > 10) {
-                        isDragging = true;
-                        cursor.classList.add('drag-state');
-                        cursorText.textContent = 'Drag';
-                    }
+                    seaBed.fill({ color: 0x145a32, alpha: 0.5 });
                 }
-            });
-
-            document.addEventListener('mouseup', function() {
-                cursor.classList.remove('drag-state');
-                cursorText.textContent = 'Explore';
-            });
-
-            // =============================================
-            // AUDIO BUTTON
-            // =============================================
-
-            let isMuted = true;
-
-            audioBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                isMuted = !isMuted;
-                audioBtn.classList.toggle('muted', isMuted);
-                showEvent('click', isMuted ? 'muted' : 'unmuted');
-            });
-
-            audioBtn.addEventListener('mouseenter', function() {
-                cursorText.textContent = 'Mute';
-                cursorText.classList.add('txt-visible');
-            });
-
-            audioBtn.addEventListener('mouseleave', function() {
-                cursorText.textContent = 'Explore';
-                cursorText.classList.remove('txt-visible');
-            });
-
-            // =============================================
-            // CENTER BLOCK INTERACTION
-            // =============================================
-
-            centerBlock.addEventListener('mouseenter', function() {
-                cursorText.textContent = 'Click';
-                cursorText.classList.add('txt-visible');
-            });
-
-            centerBlock.addEventListener('mouseleave', function() {
-                cursorText.classList.remove('txt-visible');
-            });
-
-            centerBlock.addEventListener('click', function(e) {
-                createParticles(e.clientX, e.clientY, 30);
-                cursorText.classList.add('txt-visible');
-                cursorText.textContent = 'Great!';
-                setTimeout(() => {
-                    cursorText.textContent = 'Explore';
-                }, 1000);
-            });
-
-            // =============================================
-            // MAIN BUTTON INTERACTION
-            // =============================================
-
-            mainButton.addEventListener('mouseenter', function() {
-                cursorText.textContent = 'Enter';
-                cursorText.classList.add('txt-visible');
-            });
-
-            mainButton.addEventListener('mouseleave', function() {
-                cursorText.classList.remove('txt-visible');
-            });
-
-            mainButton.addEventListener('click', function(e) {
-                e.stopPropagation();
-                createParticles(e.clientX, e.clientY, 50);
-                cursorText.textContent = 'Start!';
-                setTimeout(() => {
-                    cursorText.textContent = 'Explore';
-                }, 1500);
-            });
-
-            // =============================================
-            // INITIAL ANIMATIONS
-            // =============================================
-
-            // Show cursor after a short delay
-            setTimeout(() => {
-                cursor.style.opacity = '1';
-            }, 500);
-
-            // Prevent context menu on right click
-            document.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                createParticles(e.clientX, e.clientY, 20);
-            });
-
-            // Visibility change
-            document.addEventListener('visibilitychange', function() {
-                if (document.hidden) {
-                    cursor.style.opacity = '0';
-                } else {
-                    cursor.style.opacity = '1';
-                }
-            });
-
-            // =============================================
-            // PERFORMANCE MONITOR
-            // =============================================
-
-            let frameCount = 0;
-            let lastTime = performance.now();
-
-            function monitorPerformance() {
-                frameCount++;
-                const currentTime = performance.now();
-
-                if (currentTime - lastTime >= 1000) {
-                    // Could log FPS here if needed
-                    frameCount = 0;
-                    lastTime = currentTime;
-                }
-
-                requestAnimationFrame(monitorPerformance);
+                
+                this.app.stage.addChild(seaBed);
             }
-            monitorPerformance();
-
-            console.log('Mouse Activity Detection initialized');
-            console.log('All event listeners active: mousemove, mousedown, mouseup, click, dblclick, mouseenter, mouseleave, touchstart, touchend, touchmove, wheel, scroll, keydown');
-
-        })();
+            
+            createSeaweeds() {
+                this.seaweeds = [];
+                
+                // 创建多个海草
+                const seaweedCount = 40;
+                
+                for (let i = 0; i < seaweedCount; i++) {
+                    const x = Math.random() * window.innerWidth;
+                    const y = window.innerHeight - 50;
+                    
+                    const seaweed = new Seaweed(this.app, x, y, {
+                        height: 150 + Math.random() * 200,
+                        width: 12 + Math.random() * 15,
+                        pointCount: 18
+                    });
+                    
+                    seaweed.setParams(this.params);
+                    this.seaweeds.push(seaweed);
+                    this.app.stage.addChild(seaweed.rope);
+                }
+            }
+            
+            createBubbles() {
+                this.bubbles = [];
+                const bubbleCount = 35;
+                
+                for (let i = 0; i < bubbleCount; i++) {
+                    const bubble = new Bubble(this.app);
+                    bubble.graphics.y = Math.random() * window.innerHeight;
+                    this.bubbles.push(bubble);
+                    this.app.stage.addChild(bubble.graphics);
+                }
+            }
+            
+            addDustFilter() {
+                // 创建尘埃滤镜
+                this.dustFilter = new UnderwaterDustFilter({
+                    count: 100,
+                    speed: 0.4,
+                    size: 0.005,
+                    alpha: 0.3 * this.params.particleEffect,
+                    color: 0xaaddff
+                });
+                
+                // 应用滤镜
+                this.app.stage.filters = [this.dustFilter];
+            }
+            
+            bindEvents() {
+                // 窗口大小变化
+                window.addEventListener('resize', () => this.onWindowResize());
+                
+                // 控制滑块
+                document.getElementById('currentStrength').addEventListener('input', (e) => {
+                    this.params.currentStrength = parseFloat(e.target.value);
+                    document.getElementById('currentValue').textContent = e.target.value;
+                    this.updateSeaweedParams();
+                });
+                
+                document.getElementById('swayFrequency').addEventListener('input', (e) => {
+                    this.params.swayFrequency = parseFloat(e.target.value);
+                    document.getElementById('swayValue').textContent = e.target.value;
+                    this.updateSeaweedParams();
+                });
+                
+                document.getElementById('flexibility').addEventListener('input', (e) => {
+                    this.params.flexibility = parseFloat(e.target.value);
+                    document.getElementById('flexValue').textContent = e.target.value;
+                    this.updateSeaweedParams();
+                });
+                
+                document.getElementById('particleEffect').addEventListener('input', (e) => {
+                    this.params.particleEffect = parseFloat(e.target.value);
+                    document.getElementById('particleValue').textContent = e.target.value;
+                    this.updateDustFilter();
+                });
+            }
+            
+            updateSeaweedParams() {
+                this.seaweeds.forEach(seaweed => {
+                    seaweed.setParams(this.params);
+                });
+            }
+            
+            updateDustFilter() {
+                if (this.dustFilter) {
+                    this.dustFilter.alpha = 0.3 * this.params.particleEffect;
+                }
+            }
+            
+            onWindowResize() {
+                // PixiJS 会自动处理 resize
+            }
+            
+            animate() {
+                const time = performance.now() * 0.001;
+                
+                // 更新 FPS
+                this.updateFPS();
+                
+                // 更新海草
+                this.seaweeds.forEach(seaweed => {
+                    seaweed.update(time);
+                });
+                
+                // 更新气泡
+                this.bubbles.forEach(bubble => {
+                    bubble.update();
+                });
+                
+                // 继续动画循环
+                requestAnimationFrame(() => this.animate());
+            }
+            
+            updateFPS() {
+                if (!this.lastFrameTime) {
+                    this.lastFrameTime = performance.now();
+                    this.frameCount = 0;
+                    return;
+                }
+                
+                this.frameCount++;
+                const now = performance.now();
+                const elapsed = now - this.lastFrameTime;
+                
+                if (elapsed >= 1000) {
+                    const fps = Math.round((this.frameCount * 1000) / elapsed);
+                    document.getElementById('fps').textContent = fps;
+                    this.frameCount = 0;
+                    this.lastFrameTime = now;
+                }
+            }
+            
+            hideLoading() {
+                const loading = document.getElementById('loading');
+                loading.style.opacity = '0';
+                loading.style.pointerEvents = 'none';
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                }, 500);
+            }
+        }
+        
+        // 初始化场景
+        window.addEventListener('DOMContentLoaded', () => {
+            new UnderwaterScene();
+        });
     </script>
 </body>
 </html>
