@@ -526,15 +526,15 @@
             createSeaBed() {
                 const seaBed = new PIXI.Graphics();
                 
-                // 绘制海床
-                seaBed.rect(0, window.innerHeight - 50, window.innerWidth, 100);
+                // 绘制海床（调整位置，与海草底部对齐）
+                seaBed.rect(0, window.innerHeight - 80, window.innerWidth, 120);
                 seaBed.fill({ color: 0x1a4a3c, alpha: 1 });
                 
                 // 添加一些海底纹理
                 for (let i = 0; i < 50; i++) {
                     seaBed.circle(
                         Math.random() * window.innerWidth,
-                        window.innerHeight - 40 + Math.random() * 30,
+                        window.innerHeight - 60 + Math.random() * 40,
                         5 + Math.random() * 15
                     );
                     seaBed.fill({ color: 0x145a32, alpha: 0.5 });
@@ -550,21 +550,21 @@
                 const seaweedCount = 40;
                 
                 for (let i = 0; i < seaweedCount; i++) {
+                    // 在屏幕范围内随机分布
                     const x = Math.random() * window.innerWidth;
-                    const y = window.innerHeight - 50;
+                    const y = window.innerHeight - 100;
                     
-                    // 根据水平位置设置不同高度（层次感）
-                    const horizontalRatio = x / window.innerWidth;
-                    const height = 100 + horizontalRatio * 200;
+                    // 高度设置（参考Three.js版本）
+                    const height = 150 + Math.random() * 150;
                     
                     const seaweed = new Seaweed(this.app, x, y, {
                         height: height,
-                        width: 10 + Math.random() * 8,
-                        pointCount: 18
+                        width: 15 + Math.random() * 10,
+                        pointCount: 20
                     });
                     
-                    // 添加轻微倾斜，看起来更自然
-                    seaweed.rope.rotation = (horizontalRatio - 0.5) * 0.3;
+                    // 随机轻微旋转
+                    seaweed.rope.rotation = (Math.random() - 0.5) * 0.3;
                     
                     seaweed.setParams(this.params);
                     this.seaweeds.push(seaweed);
