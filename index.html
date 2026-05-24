@@ -218,11 +218,6 @@
             <label class="control-label">柔软度: <span id="flexValue" class="control-value">0.7</span></label>
             <input type="range" class="control-slider" id="flexibility" min="0.1" max="1" value="0.7" step="0.1">
         </div>
-        
-        <div class="control-group">
-            <label class="control-label">粒子效果: <span id="particleValue" class="control-value">0.5</span></label>
-            <input type="range" class="control-slider" id="particleEffect" min="0" max="1" value="0.5" step="0.1">
-        </div>
     </div>
     
     <div class="stats">
@@ -249,145 +244,6 @@
     
     <script type="module">
         import * as PIXI from 'pixi.js';
-        
-        // ========================================
-        // 自定义尘埃粒子滤镜
-        // ========================================
-        class UnderwaterDustFilter extends PIXI.Filter {
-            constructor(options = {}) {
-                const {
-                    count = 80,
-                    speed = 0.5,
-                    size = 0.006,
-                    alpha = 0.4,
-                    color = 0xaaddff
-                } = options;
-                
-                const vertexShader = `
-                    in vec2 aPosition;
-                    out vec2 vTextureCoord;
-                    
-                    uniform vec4 uInputSize;
-                    uniform vec4 uOutputFrame;
-                    uniform vec4 uOutputTexture;
-                    
-                    vec4 filterVertexPosition(void) {
-                        vec2 position = aPosition * uOutputFrame.zw + uOutputFrame.xy;
-                        position.x = position.x * (2.0 / uOutputTexture.x) - 1.0;
-                        position.y = position.y * (2.0 * uOutputTexture.z / uOutputTexture.y) - uOutputTexture.z;
-                        return vec4(position, 0.0, 1.0);
-                    }
-                    
-                    vec2 filterTextureCoord(void) {
-                        return aPosition * (uOutputFrame.zw * uInputSize.zw);
-                    }
-                    
-                    void main(void) {
-                        gl_Position = filterVertexPosition();
-                        vTextureCoord = filterTextureCoord();
-                    }
-                `;
-                
-                const fragmentShader = `
-                    in vec2 vTextureCoord;
-                    out vec4 finalColor;
-                    
-                    uniform sampler2D uTexture;
-                    uniform vec4 uInputSize;
-                    uniform vec3 uColor;
-                    uniform float uTime;
-                    uniform float uCount;
-                    uniform float uSpeed;
-                    uniform float uSize;
-                    uniform float uAlpha;
-                    
-                    float hash(vec2 p) {
-                        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-                    }
-                    
-                    void main() {
-                        vec4 original = texture(uTexture, vTextureCoord);
-                        float dustAccum = 0.0;
-                        float aspect = uInputSize.x / uInputSize.y;
-                        
-                        for (int i = 0; i < 150; i++) {
-                            if (float(i) >= uCount) break;
-                            float id = float(i) + 0.5;
-                            float rx = hash(vec2(id, 0.0));
-                            float ry = hash(vec2(id, 1.0));
-                            float rs = hash(vec2(id, 2.0));
-                            float rsp = hash(vec2(id, 3.0));
-                            float rph = hash(vec2(id, 4.0));
-                            float rbr = hash(vec2(id, 5.0));
-                            
-                            float t = uTime * uSpeed * (0.3 + rsp * 0.7);
-                            
-                            float px = fract(rx + sin(t * 0.7 + rph * 6.283) * 0.1 + cos(t * 0.3 + rph * 3.0) * 0.05);
-                            float py = fract(ry + cos(t * 0.5 + rph * 4.0) * 0.08 - t * 0.02);
-                            
-                            vec2 diff = vTextureCoord - vec2(px, py);
-                            diff.x *= aspect;
-                            float dist = length(diff);
-                            
-                            float moteSize = uSize * (0.4 + rs * 0.6);
-                            float mote = smoothstep(moteSize, moteSize * 0.1, dist);
-                            
-                            float twinkle = 0.5 + 0.5 * sin(t * 2.5 + rph * 6.283);
-                            
-                            dustAccum += mote * (0.4 + rbr * 0.6) * twinkle;
-                        }
-                        
-                        dustAccum *= uAlpha;
-                        vec3 color = original.rgb + uColor * dustAccum * original.a;
-                        finalColor = vec4(color, original.a);
-                    }
-                `;
-                
-                super({
-                    glProgram: new PIXI.GlProgram({
-                        vertex: vertexShader,
-                        fragment: fragmentShader
-                    }),
-                    resources: {
-                        underwaterDustUniforms: {
-                            uColor: { value: new Float32Array(3), type: 'vec3<f32>' },
-                            uTime: { value: 0, type: 'f32' },
-                            uCount: { value: count, type: 'f32' },
-                            uSpeed: { value: speed, type: 'f32' },
-                            uSize: { value: size, type: 'f32' },
-                            uAlpha: { value: alpha, type: 'f32' }
-                        }
-                    }
-                });
-                
-                this._color = color;
-                this._startTime = performance.now();
-                this.color = color;
-            }
-            
-            apply(filterManager, input, output, clearMode) {
-                this.resources.underwaterDustUniforms.uniforms.uTime = (performance.now() - this._startTime) / 1000;
-                filterManager.applyFilter(this, input, output, clearMode);
-            }
-            
-            get color() {
-                return this._color;
-            }
-            set color(value) {
-                this._color = value;
-                const u = this.resources.underwaterDustUniforms.uniforms;
-                u.uColor[0] = ((value >> 16) & 0xff) / 255;
-                u.uColor[1] = ((value >> 8) & 0xff) / 255;
-                u.uColor[2] = (value & 0xff) / 255;
-            }
-            
-            get alpha() {
-                return this.resources.underwaterDustUniforms.uniforms.uAlpha;
-            }
-            set alpha(value) {
-                this.resources.underwaterDustUniforms.uniforms.uAlpha = value;
-            }
-        }
         
         // ========================================
         // 海草类
@@ -626,8 +482,7 @@
                 this.params = {
                     currentStrength: 0.5,
                     swayFrequency: 1.0,
-                    flexibility: 0.7,
-                    particleEffect: 0.5
+                    flexibility: 0.7
                 };
                 
                 this.init();
@@ -655,9 +510,6 @@
                 
                 // 创建气泡
                 this.createBubbles();
-                
-                // 添加尘埃滤镜
-                this.addDustFilter();
                 
                 // 绑定事件
                 this.bindEvents();
@@ -725,20 +577,6 @@
                 }
             }
             
-            addDustFilter() {
-                // 创建尘埃滤镜
-                this.dustFilter = new UnderwaterDustFilter({
-                    count: 100,
-                    speed: 0.4,
-                    size: 0.005,
-                    alpha: 0.3 * this.params.particleEffect,
-                    color: 0xaaddff
-                });
-                
-                // 应用滤镜
-                this.app.stage.filters = [this.dustFilter];
-            }
-            
             bindEvents() {
                 // 窗口大小变化
                 window.addEventListener('resize', () => this.onWindowResize());
@@ -762,23 +600,12 @@
                     this.updateSeaweedParams();
                 });
                 
-                document.getElementById('particleEffect').addEventListener('input', (e) => {
-                    this.params.particleEffect = parseFloat(e.target.value);
-                    document.getElementById('particleValue').textContent = e.target.value;
-                    this.updateDustFilter();
-                });
             }
             
             updateSeaweedParams() {
                 this.seaweeds.forEach(seaweed => {
                     seaweed.setParams(this.params);
                 });
-            }
-            
-            updateDustFilter() {
-                if (this.dustFilter) {
-                    this.dustFilter.alpha = 0.3 * this.params.particleEffect;
-                }
             }
             
             onWindowResize() {
