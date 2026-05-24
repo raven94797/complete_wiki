@@ -277,10 +277,11 @@
             }
             
             initPoints() {
-                // 创建绳索点
+                // 创建绳索点（从底部向上生长）
                 for (let i = 0; i < this.pointCount; i++) {
                     const t = i / (this.pointCount - 1);
-                    this.points.push(new PIXI.Point(0, t * this.height));
+                    // y 坐标从 0（底部）到 -height（顶部），这样海草向上生长
+                    this.points.push(new PIXI.Point(0, -t * this.height));
                 }
             }
             
@@ -600,6 +601,33 @@
                     this.updateSeaweedParams();
                 });
                 
+                // 鼠标拖拽交互
+                this.isDragging = false;
+                this.lastMouseY = 0;
+                
+                this.app.canvas.addEventListener('mousedown', (e) => {
+                    this.isDragging = true;
+                    this.lastMouseY = e.clientY;
+                });
+                
+                this.app.canvas.addEventListener('mousemove', (e) => {
+                    if (this.isDragging) {
+                        const deltaY = e.clientY - this.lastMouseY;
+                        this.params.currentStrength = Math.max(0, Math.min(1, this.params.currentStrength + deltaY * 0.005));
+                        document.getElementById('currentStrength').value = this.params.currentStrength;
+                        document.getElementById('currentValue').textContent = this.params.currentStrength.toFixed(1);
+                        this.updateSeaweedParams();
+                        this.lastMouseY = e.clientY;
+                    }
+                });
+                
+                this.app.canvas.addEventListener('mouseup', () => {
+                    this.isDragging = false;
+                });
+                
+                this.app.canvas.addEventListener('mouseleave', () => {
+                    this.isDragging = false;
+                });
             }
             
             updateSeaweedParams() {
