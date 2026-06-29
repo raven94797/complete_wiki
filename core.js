@@ -16,7 +16,7 @@ function initApp() {
 
 function initNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
-    const hash = window.location.hash.substring(1) || 'project';
+    const hash = window.location.hash.substring(1) || 'home';
     
     // 设置初始页面状态
     CONFIG.requestedPage = hash;
@@ -47,7 +47,7 @@ function initNavigation() {
     });
     
     window.addEventListener('hashchange', function() {
-        const hash = window.location.hash.substring(1) || 'project';
+        const hash = window.location.hash.substring(1) || 'home';
         if (CONFIG.BIN_IDS[hash]) {
             CONFIG.requestedPage = hash;
             CONFIG.currentPage = hash;
@@ -70,16 +70,23 @@ async function loadWikiContent() {
     }
     
     const binId = CONFIG.BIN_IDS[CONFIG.currentPage];
-    if (!binId) {
-        showError('未找到该页面的配置信息');
-        return;
-    }
     
     const container = document.getElementById('wikiContent');
     const loading = document.getElementById('contentLoading');
     
     if (!container || !loading) {
         console.error('无法找到 wikiContent 或 contentLoading 元素');
+        return;
+    }
+    
+    if (CONFIG.currentPage === 'home') {
+        loading.style.display = 'none';
+        renderWikiContent(CONFIG.FALLBACK_DATA['home']);
+        return;
+    }
+    
+    if (!binId) {
+        showError('未找到该页面的配置信息');
         return;
     }
     
@@ -212,6 +219,11 @@ function renderWikiContent(data) {
         console.log('[DEBUG] 数据:', data);
     }
     
+    CONFIG.currentPageData = data;
+    
+    // 保存原始Markdown内容用于编辑
+    CONFIG.rawContent = data ? (data.markdown || '') : '';
+    
     const container = document.getElementById('wikiContent');
     const loading = document.getElementById('contentLoading');
     
@@ -227,6 +239,14 @@ function renderWikiContent(data) {
     
     CONFIG.lastLoadedPage = CONFIG.currentPage;
     
+    const editToolbar = document.getElementById('editToolbar');
+    const editContentBtn = document.getElementById('editContentBtn');
+    if (CONFIG.currentPage === 'home') {
+        if (editToolbar) editToolbar.style.display = 'none';
+    } else {
+        if (editToolbar) editToolbar.style.display = 'flex';
+    }
+    
     if (CONFIG.DEBUG_MODE) {
         console.log('[DEBUG] container 元素:', container);
         console.log('[DEBUG] loading 元素:', loading);
@@ -238,9 +258,7 @@ function renderWikiContent(data) {
         container.removeChild(container.firstChild);
     }
     
-    setTimeout(() => {
-        container.innerHTML = '';
-    }, 0);
+    // 移除了之前的 setTimeout 清空代码，因为它会在设置内容后立即清空容器
     
     if (!data || !data.content) {
         if (CONFIG.DEBUG_MODE) console.log('[DEBUG] data.content 为空，显示默认内容');
@@ -249,9 +267,17 @@ function renderWikiContent(data) {
             : '<div class="empty-state"><p>暂无内容，请编辑此页面</p></div>';
     } else {
         if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 开始解析Markdown内容');
-        let htmlContent = parseMarkdown(data.content);
         
-        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 解析后的HTML:', htmlContent.substring(0, 150) + '...');
+        let htmlContent;
+        // 检查内容是否已经是HTML格式
+        if (data.content.includes('<') && data.content.includes('>')) {
+            if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 内容已是HTML格式，直接使用');
+            htmlContent = data.content;
+        } else {
+            htmlContent = parseMarkdown(data.content);
+        }
+        
+        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 最终HTML:', htmlContent.substring(0, 150) + '...');
         
         if (CONFIG.paperMode && !htmlContent.includes('class="paper"')) {
             htmlContent = `<div class="paper" data-page="${CONFIG.currentPage}">${htmlContent}</div>`;
@@ -259,7 +285,29 @@ function renderWikiContent(data) {
         
         container.innerHTML = htmlContent;
         
-        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] container.innerHTML 设置完成');
+        // 根据paperMode设置容器类
+        if (CONFIG.paperMode) {
+            container.classList.add('paper-mode');
+        } else {
+            container.classList.remove('paper-mode');
+        }
+        
+        // 移除强制样式，让CSS类样式生效
+        container.style.color = '';
+        container.style.background = '';
+        
+        // 触发MathJax重新解析LaTeX公式
+        if (window.MathJax) {
+            MathJax.typeset();
+        }
+        container.style.minHeight = '';
+        container.style.padding = '';
+        
+        if (CONFIG.DEBUG_MODE) {
+            console.log('[DEBUG] container.innerHTML 设置完成');
+            console.log('[DEBUG] container内容长度:', container.innerHTML.length);
+            console.log('[DEBUG] 实际内容预览:', container.textContent.substring(0, 100) + '...');
+        }
         
         container.setAttribute('data-current-page', CONFIG.currentPage);
     }
@@ -313,6 +361,7 @@ function enableEditing() {
     const saveContentBtn = document.getElementById('saveContentBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     const editContentBtn = document.getElementById('editContentBtn');
+    const editToolbar = document.getElementById('editToolbar');
     
     if (!contentContainer || !editorContainer || !formatToolbar || !contentEditor) {
         console.error('无法找到编辑相关的DOM元素');
@@ -320,15 +369,25 @@ function enableEditing() {
     }
     
     CONFIG.originalContent = contentContainer.innerHTML;
-    let contentToEdit = CONFIG.originalContent;
-    if (CONFIG.paperMode && contentToEdit.includes('<div class="paper">')) {
-        const match = contentToEdit.match(/<div class="paper">([\s\S]*?)<\/div>/);
-        if (match && match[1]) {
-            contentToEdit = match[1];
+    
+    let markdownContent = '';
+    
+    // 优先使用保存的原始Markdown内容
+    if (CONFIG.rawContent && CONFIG.rawContent.trim()) {
+        markdownContent = CONFIG.rawContent;
+    } else if (CONFIG.currentPageData && CONFIG.currentPageData.markdown) {
+        markdownContent = CONFIG.currentPageData.markdown;
+    } else {
+        let contentToEdit = CONFIG.originalContent;
+        if (CONFIG.paperMode && contentToEdit.includes('<div class="paper">')) {
+            const match = contentToEdit.match(/<div class="paper">([\s\S]*?)<\/div>/);
+            if (match && match[1]) {
+                contentToEdit = match[1];
+            }
         }
+        markdownContent = htmlToMarkdown(contentToEdit);
     }
     
-    const markdownContent = htmlToMarkdown(contentToEdit);
     contentEditor.value = markdownContent;
     
     contentContainer.style.display = 'none';
@@ -337,6 +396,7 @@ function enableEditing() {
     if (saveContentBtn) saveContentBtn.style.display = 'inline-block';
     if (cancelEditBtn) cancelEditBtn.style.display = 'inline-block';
     if (editContentBtn) editContentBtn.style.display = 'none';
+    if (editToolbar) editToolbar.style.display = 'none';
     
     updateEditStatus('编辑模式已启用');
 }
@@ -393,6 +453,7 @@ async function saveContent() {
         const updatedData = {
             ...currentData,
             content: htmlContent,
+            markdown: newMarkdown,
             last_updated: new Date().toISOString()
         };
         
@@ -437,6 +498,7 @@ function cancelEditing() {
     const saveContentBtn = document.getElementById('saveContentBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     const editContentBtn = document.getElementById('editContentBtn');
+    const editToolbar = document.getElementById('editToolbar');
     
     if (contentEditor) contentEditor.value = '';
     if (editorContainer) editorContainer.style.display = 'none';
@@ -445,6 +507,7 @@ function cancelEditing() {
     if (saveContentBtn) saveContentBtn.style.display = 'none';
     if (cancelEditBtn) cancelEditBtn.style.display = 'none';
     if (editContentBtn) editContentBtn.style.display = 'inline-block';
+    if (editToolbar) editToolbar.style.display = 'flex';
     
     updateEditStatus('');
 }
@@ -541,12 +604,120 @@ function bindEventListeners() {
             loadWikiContent();
         });
     }
+    
+    // 绑定导出全部数据按钮
+    const exportAllBtn = document.getElementById('exportAllBtn');
+    if (exportAllBtn) {
+        exportAllBtn.addEventListener('click', exportAllData);
+    }
+    
+    document.querySelectorAll('.nav-dropdown').forEach(dropdown => {
+        let hideTimeout;
+        
+        dropdown.addEventListener('mouseenter', function() {
+            clearTimeout(hideTimeout);
+            const content = this.querySelector('.nav-dropdown-content');
+            if (content) {
+                content.style.display = 'block';
+                content.style.opacity = '1';
+                content.style.transform = 'translateY(0)';
+            }
+        });
+        
+        dropdown.addEventListener('mouseleave', function() {
+            const content = this.querySelector('.nav-dropdown-content');
+            if (content) {
+                hideTimeout = setTimeout(() => {
+                    content.style.opacity = '0';
+                    content.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        if (content.style.opacity === '0') {
+                            content.style.display = 'none';
+                        }
+                    }, 200);
+                }, 300);
+            }
+        });
+    });
 }
 
 function updateEditStatus(message) {
     const editStatus = document.getElementById('editStatus');
     if (editStatus) {
         editStatus.textContent = message;
+    }
+}
+
+async function exportAllData() {
+    const exportBtn = document.getElementById('exportAllBtn');
+    
+    if (exportBtn) {
+        exportBtn.disabled = true;
+        exportBtn.textContent = '正在导出...';
+    }
+    
+    const allData = {};
+    const pages = Object.keys(CONFIG.BIN_IDS).filter(page => page !== 'home');
+    
+    try {
+        for (const page of pages) {
+            const binId = CONFIG.BIN_IDS[page];
+            if (!binId) continue;
+            
+            try {
+                const response = await fetch(`${CONFIG.JSONBIN_API_URL}/${binId}`, {
+                    headers: {
+                        'X-Master-Key': CONFIG.JSONBIN_MASTER_KEY
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    allData[page] = data;
+                    if (CONFIG.DEBUG_MODE) {
+                        console.log(`[DEBUG] 已导出页面: ${page}`);
+                    }
+                } else {
+                    console.warn(`[WARN] 导出页面 ${page} 失败: HTTP ${response.status}`);
+                    allData[page] = { error: `HTTP ${response.status}` };
+                }
+            } catch (error) {
+                console.warn(`[WARN] 导出页面 ${page} 失败:`, error);
+                allData[page] = { error: error.message };
+            }
+        }
+        
+        const exportInfo = {
+            exportDate: new Date().toISOString(),
+            version: '1.0.0',
+            totalPages: pages.length,
+            pages: allData
+        };
+        
+        const blob = new Blob([JSON.stringify(exportInfo, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wiki-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        if (CONFIG.DEBUG_MODE) {
+            console.log('[DEBUG] 数据导出成功:', exportInfo);
+        }
+        
+        alert(`成功导出 ${pages.length} 个页面的数据！`);
+        
+    } catch (error) {
+        console.error('导出失败:', error);
+        alert('导出失败: ' + error.message);
+    } finally {
+        if (exportBtn) {
+            exportBtn.disabled = false;
+            exportBtn.textContent = '导出全部数据';
+        }
     }
 }
 
@@ -575,4 +746,8 @@ function showError(message) {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { initApp, initNavigation, loadWikiContent, renderWikiContent, enableEditing, saveContent, cancelEditing, applyFormat, bindEventListeners, updateEditStatus, showError };
+} else {
+    document.addEventListener('DOMContentLoaded', function() {
+        initApp();
+    });
 }

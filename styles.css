@@ -1,3 +1,6 @@
+/* 导入Google字体 - 必须放在最顶部 */
+@import url('https://fonts.googleapis.com/css2?family=Arima+Madurai:wght@400;600;800;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
 /* 基础样式重置 */
 * {
     margin: 0;
@@ -73,24 +76,115 @@ body {
 
 .main-nav {
     display: flex;
-    gap: 2rem;
+    gap: 1rem;
+    align-items: center;
+}
+
+.nav-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.nav-dropdown-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-dropdown-toggle:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.nav-dropdown-toggle::after {
+    content: '▼';
+    font-size: 0.6rem;
+    opacity: 0.7;
+}
+
+.nav-dropdown:hover > .nav-dropdown-content {
+    display: block !important;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.nav-dropdown-content {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    background: white;
+    min-width: 180px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 1000;
+    padding: 0.5rem 0;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .nav-link {
-    color: white;
+    color: var(--primary-color);
     text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    padding: 0.5rem 1.25rem;
+    display: block;
     transition: var(--transition);
     font-weight: 500;
+    font-size: 0.9rem;
 }
 
 .nav-link:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--light-bg);
 }
 
 .nav-link.active {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(52, 152, 219, 0.1);
+    color: var(--secondary-color);
+}
+
+.home-link {
+    font-weight: 700;
+    padding: 0.5rem 1.25rem;
+}
+
+/* 导出按钮样式 */
+.export-btn {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: auto;
+    box-shadow: 0 2px 8px rgba(17, 153, 142, 0.3);
+}
+
+.export-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+}
+
+.export-btn:active {
+    transform: translateY(0);
+}
+
+.export-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 /* 页面内容 */
@@ -109,6 +203,13 @@ body {
     padding: 2.5rem;
     box-shadow: var(--card-shadow);
     margin: 2rem 0rem 2rem 8rem;
+}
+
+/* paperMode时的容器样式 - 透明背景让paper样式生效 */
+.content-container.paper-mode {
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
 }
 
 .content-loading {
@@ -399,322 +500,448 @@ body {
     text-decoration: underline;
 }
 
-/* 纸张样式 - iGEM Wiki模板风格 */
-.paper {
-    position: relative;
-    width: 100%;
-    max-width: 900px;
-    min-height: 600px;
-    margin: 40px auto;
-    padding: 60px;
-    background-color: #fff;
-    border-radius: 20px;
-    box-shadow: 0 0 0 4px #d4cde9, 
-                0 0 0 8px #fff, 
-                0 0 0 10px #d4cde9,
-                0 20px 60px rgba(0, 0, 0, 0.15);
-    overflow: visible;
-}
-
-.paper::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 8px;
-    background: linear-gradient(90deg, 
-        #d4cde9 0%, 
-        #a99ad3 25%, 
-        #d4cde9 50%, 
-        #a99ad3 75%, 
-        #d4cde9 100%);
-    border-radius: 20px 20px 0 0;
-}
-
-/* 标题样式 */
-.paper h2 {
-    color: #2c5f2d;
-    font-size: 3em;
-    margin-bottom: 40px;
-    text-align: center;
-    font-family: 'Arima Madurai', sans-serif;
-    font-weight: 800;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.paper h3 {
-    color: #5f792d;
-    font-size: 2.2em;
-    margin-top: 50px;
-    margin-bottom: 20px;
-    font-family: 'Arima Madurai', sans-serif;
-    font-weight: 600;
-}
-
-.paper h4 {
-    color: #2d5f79;
-    font-size: 1.8em;
-    margin-top: 40px;
-    margin-bottom: 15px;
-    font-family: 'Arima Madurai', sans-serif;
-    font-weight: 600;
-}
-
-.paper h5 {
-    color: #5f2d79;
-    font-size: 1.5em;
-    margin-top: 30px;
-    margin-bottom: 10px;
-    font-family: 'Arima Madurai', sans-serif;
-    font-weight: 600;
-}
-
-.paper h6 {
-    color: #792d5f;
-    font-size: 1.2em;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    font-family: 'Arima Madurai', sans-serif;
-    font-weight: 600;
-}
-
-/* 顶部装饰线 */
-.paper::before {
-    content: '';
-    position: relative;
-    display: block;
-    height: 5px;
-    background-color: #d2c7ef;
-    border-radius: 5px;
-    z-index: -1;
-}
-
-/* 段落样式 */
-.paper p {
-    color: #333;
-    font-family: 'Crimson Text', normal, sans-serif;
-    line-height: 1.5;
-    margin-bottom: 20px;
-    text-indent: 0;
-    font-size: 1.5em;
-    text-align: justify;
-    text-align-last: left;
-}
-
-/* 强调文本样式 */
-.paper .strong {
-    font-weight: bold;
-    color: #2c5f2d;
-}
-
-.paper .strong:hover {
-    color: #444;
-    text-decoration: underline;
-}
-
-/* 引用样式 */
-.paper .reference {
-    position: relative;
-    width: 100%;
-    min-height: 150px;
-    background-color: #a99ad3;
-    border-radius: 20px;
-    margin: 40px auto 80px;
-    padding: 80px;
-    padding-top: 90px;
-}
-
-.paper .reference::before {
-    content: '';
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-    border-radius: 15px;
-    background-color: #a99ad3;
-    box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.5);
-}
-
-.paper .reference .left_top_corner,
-.paper .reference .right_top_corner,
-.paper .reference .left_bottom_corner,
-.paper .reference .right_bottom_corner {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    z-index: 1;
-}
-
-.paper .reference .left_top_corner {
-    top: 25px;
-    left: 25px;
-    background-image: url('https://static.igem.wiki/teams/5858/images/template/left-top-box.webp');
-}
-
-.paper .reference .right_top_corner {
-    top: 25px;
-    right: 25px;
-    background-image: url('https://static.igem.wiki/teams/5858/images/template/right-top-box.webp');
-}
-
-.paper .reference .left_bottom_corner {
-    bottom: 25px;
-    left: 25px;
-    background-image: url('https://static.igem.wiki/teams/5858/images/template/left-bottom-box.webp');
-}
-
-.paper .reference .right_bottom_corner {
-    bottom: 25px;
-    right: 25px;
-    background-image: url('https://static.igem.wiki/teams/5858/images/template/right-bottom-box.webp');
-}
-
-.paper .reference .reference_title {
-    position: absolute;
-    top: 20px;
-    left: 0;
-    width: 100%;
-    height: 50px;
-    background-image: url('https://static.igem.wiki/teams/5858/images/template/references.svg');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    z-index: 1;
-}
-
-.paper .reference::after {
-    content: '';
-    position: absolute;
-    bottom: -25px;
-    left: 0;
-    right: 0;
-    height: 50px;
-    background-color: #d4cde9;
-    border-radius: 20px;
-    z-index: -3;
-    border-top: 1px solid #a99ad3;
-    border-bottom: 1px solid #a99ad3;
-}
-
-.paper .reference .line {
-    position: absolute;
-    height: 1.5px;
-    width: 90%;
-    background-color: #a99ad3;
-    z-index: -2;
-}
-
-.paper .reference .top-line {
-    left: 7%;
-    bottom: -10px;
-}
-
-.paper .reference .bottom-line {
-    left: 4%;
-    bottom: -18px;
-}
-
-.paper .reference p {
-    position: relative;
-    z-index: 2;
-    color: #fff;
-    font-size: 1.2em;
-    line-height: 1.6;
-    text-indent: 0;
-}
-
-.paper .referlink {
-    color: #acb2ef;
-    font-weight: bold;
-    text-decoration: underline;
-}
-
-.paper .referlink:hover {
-    color: #b28dd7;
-    text-decoration: underline;
-}
-
-.paper .reference a {
-    color: #fff;
-}
-
-.paper .reference a:hover {
-    text-decoration: underline;
-}
-
-/* 图片样式 */
-.paper img {
-    max-width: 80%;
-    height: auto;
-    display: block;
-    margin: 20px auto;
-}
-
-.paper .figure-caption {
-    display: block;
-    text-align: center;
-    font-size: 1.4em;
-    color: #555;
-    margin-top: 5px;
-    margin-bottom: 10px;
-    text-align-last: center;
-    font-weight: 600;
-}
-
-/* 图片容器样式 */
-.content-image-container {
-    margin: 2rem 0;
-    text-align: center;
-}
-
-.content-image {
-    max-width: 100%;
-    max-height: 500px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.content-image-caption {
-    margin-top: 1rem;
-    font-style: italic;
-    color: #666;
-    font-size: 1.1em;
-    padding: 0.5rem 1rem;
-    background: #f8f9fa;
-    border-radius: 4px;
-    display: inline-block;
-}
-
-.content-image-error {
-    color: #dc3545;
-    border: 2px dashed #dc3545;
-    padding: 1rem;
-    border-radius: 8px;
-    text-align: center;
-}
-
-/* 图片插入按钮样式 */
-.image-insert-btn {
-    background: #28a745;
-    color: white;
-    border: none;
-    padding: 0.3rem 0.8rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-    margin-left: 0.5rem;
-}
-
-.image-insert-btn:hover {
-    background: #218838;
-}
-
-/* 导入Google字体 */
-@import url('https://fonts.googleapis.com/css2?family=Arima+Madurai:wght@400;600;800;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+/* ==================== 纸张样式 ==================== */
+        
+        /* 纸张样式 - 包装容器 */
+        .paper {
+            background-color: #f0e7d8;
+            border-radius: 40px;
+            padding: 40px;
+            padding-left: 60px;
+            padding-right: 60px;
+            margin: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* 标题样式 */
+        .paper h2 {
+            position: relative;
+            font-family: 'Arima Madurai', sans-serif;
+            font-weight: 900;
+            font-style: normal;
+            color: #333;
+            margin: 0 auto 20px;
+            text-align: center;
+            font-size: 2.4em;
+            width: fit-content;
+            z-index: 3;
+        }
+        
+        .paper h2::before {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            left: -60px;
+            width: 120px;
+            height: 40px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/h2tl.webp');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+        
+        .paper h2::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            right: -60px;
+            width: 120px;
+            height: 40px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/h2tr.webp');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -1;
+        }
+        
+        .paper h3 {
+            position: relative;
+            font-family: 'Arima Madurai', sans-serif;
+            font-weight: 800;
+            font-style: normal;
+            color: #fff;
+            margin-bottom: 20px;
+            margin-left: 50px;
+            padding: 5px 25px;
+            font-size: 2.0em;
+            width: fit-content;
+            z-index: 3;
+        }
+        
+        .paper h3::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: -50px;
+            width: 40px;
+            height: 40px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/title/h3t.svg');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+        
+        .paper h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            width: 100%;
+            height: 100%;
+            background-color: #554c72;
+            border-radius: 2.0em;
+            z-index: -1;
+        }
+        
+        .paper h4 {
+            position: relative;
+            font-family: 'Arima Madurai', sans-serif;
+            font-weight: 600;
+            font-style: normal;
+            color: #444;
+            margin-bottom: 20px;
+            margin-left: 50px;
+            padding: 5px 35px;
+            font-size: 1.7em;
+            width: fit-content;
+            z-index: 3;
+        }
+        
+        .paper h4::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: -50px;
+            width: 40px;
+            height: 40px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/title/h4t.webp');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+        
+        .paper h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            width: 100%;
+            height: 100%;
+            background-color: #a99ad3;
+            border-radius: 1.7em;
+            z-index: -1;
+        }
+        
+        .paper h5 {
+            position: relative;
+            font-family: 'Arima Madurai', sans-serif;
+            font-weight: 600;
+            font-style: normal;
+            color: #666;
+            margin-bottom: 20px;
+            margin-left: 50px;
+            padding: 5px 45px;
+            font-size: 1.5em;
+            width: fit-content;
+            z-index: 3;
+        }
+        
+        .paper h5::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: calc(-50px + 20px - 12.5px);
+            width: 25px;
+            height: 25px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/title/h5t.svg');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+        
+        .paper h5::after {
+            content: '';
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            width: 100%;
+            height: 100%;
+            background-color: #d2c7ef;
+            border-radius: 1.5em;
+            z-index: -1;
+        }
+        
+        .paper h6 {
+            position: relative;
+            font-family: 'Arima Madurai', sans-serif;
+            font-weight: 600;
+            font-style: normal;
+            color: #666;
+            margin-bottom: 20px;
+            margin-left: 50px;
+            padding: 5px 45px;
+            font-size: 1.3em;
+            width: fit-content;
+            z-index: 3;
+        }
+        
+        .paper h6::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: calc(-50px + 20px - 7.5px);
+            width: 15px;
+            height: 15px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/title/h6t.svg');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+        
+        .paper h6::after {
+            content: '';
+            position: absolute;
+            bottom: 9px;
+            right: 0px;
+            width: 100%;
+            height: 5px;
+            background-color: #d2c7ef;
+            border-radius: 5px;
+            z-index: -1;
+        }
+        
+        /* 段落样式 */
+        .paper p {
+            color: #333;
+            font-family: 'Crimson Text', normal, sans-serif;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            text-indent: 0;
+            font-size: 1.5em;
+            text-align: justify;
+            text-align-last: left;
+        }
+        
+        /* 强调文本样式 */
+        .paper .strong {
+            font-weight: bold;
+            color: #2c5f2d;
+        }
+        
+        .paper .strong:hover {
+            color: #444;
+            text-decoration: underline;
+        }
+        
+        /* 引用样式 */
+        .paper .reference {
+            position: relative;
+            width: 100%;
+            min-height: 150px;
+            background-color: #a99ad3;
+            border-radius: 20px;
+            margin: 40px auto 80px;
+            padding: 80px;
+            padding-top: 90px;
+        }
+        
+        .paper .reference::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border-radius: 15px;
+            background-color: #a99ad3;
+            box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.5);
+        }
+        
+        .paper .reference .left_top_corner,
+        .paper .reference .right_top_corner,
+        .paper .reference .left_bottom_corner,
+        .paper .reference .right_bottom_corner {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+        
+        .paper .reference .left_top_corner {
+            top: 25px;
+            left: 25px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/left-top-box.webp');
+        }
+        
+        .paper .reference .right_top_corner {
+            top: 25px;
+            right: 25px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/right-top-box.webp');
+        }
+        
+        .paper .reference .left_bottom_corner {
+            bottom: 25px;
+            left: 25px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/left-bottom-box.webp');
+        }
+        
+        .paper .reference .right_bottom_corner {
+            bottom: 25px;
+            right: 25px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/right-bottom-box.webp');
+        }
+        
+        .paper .reference .reference_title {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background-image: url('https://static.igem.wiki/teams/5858/images/template/references.svg');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            z-index: 1;
+        }
+        
+        .paper .reference::after {
+            content: '';
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background-color: #d4cde9;
+            border-radius: 20px;
+            z-index: -3;
+            border-top: 1px solid #a99ad3;
+            border-bottom: 1px solid #a99ad3;
+        }
+        
+        .paper .reference .line {
+            position: absolute;
+            height: 1.5px;
+            width: 90%;
+            background-color: #a99ad3;
+            z-index: -2;
+        }
+        
+        .paper .reference .top-line {
+            left: 7%;
+            bottom: -10px;
+        }
+        
+        .paper .reference .bottom-line {
+            left: 4%;
+            bottom: -18px;
+        }
+        
+        .paper .reference p {
+            position: relative;
+            z-index: 2;
+            color: #fff;
+            font-size: 1.2em;
+            line-height: 1.6;
+            text-indent: 0;
+        }
+        
+        .paper .referlink {
+            color: #acb2ef;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        
+        .paper .referlink:hover {
+            color: #b28dd7;
+            text-decoration: underline;
+        }
+        
+        .paper .reference a {
+            color: #fff;
+        }
+        
+        .paper .reference a:hover {
+            text-decoration: underline;
+        }
+        
+        /* 图片样式 */
+        .paper img {
+            max-width: 80%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .paper .figure-caption {
+            display: block;
+            text-align: center;
+            font-size: 1.4em;
+            color: #555;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            text-align-last: center;
+            font-weight: 600;
+        }
+        
+        /* 图片容器样式 */
+        .content-image-container {
+            margin: 2rem 0;
+            text-align: center;
+        }
+        
+        .content-image {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .content-image-caption {
+            margin-top: 1rem;
+            font-style: italic;
+            color: #666;
+            font-size: 1.1em;
+            padding: 0.5rem 1rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .content-image-error {
+            color: #dc3545;
+            border: 2px dashed #dc3545;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        /* 图片插入按钮样式 */
+        .image-insert-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 0.5rem;
+        }
+        
+        .image-insert-btn:hover {
+            background: #218838;
+        }
 
 /* 格式选择工具栏 */
 .format-toolbar {
@@ -804,6 +1031,74 @@ input:checked + .toggle-slider:before {
     transform: translateX(26px);
 }
 
+/* 列表样式 */
+.paper ul,
+.paper ol {
+    margin: 20px 0;
+    padding-left: 40px;
+}
+
+.paper li {
+    font-size: 1.5em;
+    line-height: 1.8;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.paper ul {
+    list-style-type: disc;
+}
+
+.paper ol {
+    list-style-type: decimal;
+}
+
+/* 代码样式 */
+.paper code {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+    background-color: #f4f4f4;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #c7254e;
+}
+
+.paper pre {
+    background-color: #2d2d2d;
+    color: #ccc;
+    padding: 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+    margin: 20px 0;
+}
+
+.paper pre code {
+    background-color: transparent;
+    padding: 0;
+    color: #ccc;
+}
+
+/* 链接样式 */
+.paper a {
+    color: #2d5f79;
+    text-decoration: underline;
+}
+
+.paper a:hover {
+    color: #5f792d;
+}
+
+/* 分隔线样式 */
+.paper hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #d4cde9, transparent);
+    margin: 40px 0;
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
     .format-toolbar {
@@ -814,5 +1109,102 @@ input:checked + .toggle-slider:before {
     .paper-mode-toggle {
         margin-left: 0;
         margin-top: 0.5rem;
+    }
+}
+
+/* Home页面样式 */
+.home-container {
+    text-align: center;
+    padding: 2rem;
+}
+
+.home-hero {
+    margin-bottom: 3rem;
+}
+
+.home-title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    font-family: 'Arima Madurai', sans-serif;
+}
+
+.home-subtitle {
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+    font-weight: 500;
+}
+
+.home-section {
+    max-width: 800px;
+    margin: 0 auto 3rem;
+}
+
+.home-section h2 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.home-section p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #555;
+}
+
+.home-cards {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 3rem;
+}
+
+.home-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 16px;
+    width: 280px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.home-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+}
+
+.home-card .card-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.home-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.home-card p {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+    .home-title {
+        font-size: 2rem;
+    }
+    
+    .home-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .home-card {
+        width: 100%;
+        max-width: 300px;
     }
 }

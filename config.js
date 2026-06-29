@@ -9,14 +9,30 @@ const CONFIG = {
     
     // 页面配置
     BIN_IDS: {
-        'project': '69d355cd856a68218902fd64',
-        'team': '69d355fb856a68218902fde8',
-        'model': '69d3560c36566621a88262e6',
-        'lab': '69d355eaaaba882197cb3d1d',
-        'human': '69d3561f856a68218902fe54',
-        'parts': '69d3513936566621a8825323',
-        'timeline': '69d3561f856a68218902fe54',
-        'comments': '69d3561f856a68218902fe54'
+        // Home (不使用API，单独处理)
+        'home': null,
+        
+        // Project
+        'description': '69f9b8dbaaba88219772a4da',
+        'design': '69f9b8e4856a682189aab732',
+        'contribution': '69f9b908aaba88219772a5cf',
+        'implementation': '69f9b96736566621a828afde',
+        'safety': '69f9b979856a682189aab9b4',
+        
+        // Wet Lab
+        'engineering': '69f9b9cdaaba88219772a951',
+        'notebook': '69f9ba1caaba88219772abe8',
+        'result': '69f9ba28856a682189aabe2f',
+        'protocol': '69f9ba43856a682189aabea4',
+        'parts': '69f9ba7f856a682189aabfb7',
+        'proof-of-concept': '69f9ba9b856a682189aac031',
+        'future': '69f9baaf36566621a828b6e9',
+        
+        // Human Practice
+        'ihp': '69f9bae7aaba88219772af86',
+        'education': '69f9bafa856a682189aac1f8',
+        'inclusivity': '69f9bb1236566621a828b962',
+        'collaboration': '69f9bb1faaba88219772b175'
     },
     
     // 调试模式 - 设置为true以显示调试信息
@@ -26,7 +42,7 @@ const CONFIG = {
     USE_FALLBACK_DATA: true,
     
     // 当前页面
-    currentPage: 'project',
+    currentPage: 'home',
     
     isEditing: false,
     originalContent: '',
@@ -51,34 +67,117 @@ const CONFIG = {
     
     // 备用数据（当API不可用时使用）
     FALLBACK_DATA: {
-        'project': {
-            title: '项目总览',
-            content: '<h2>欢迎来到北师珠iGEM项目</h2>\n<p>这是一个智能合成生物学平台，致力于创新和探索合成生物学的前沿领域。</p>\n<h3>项目目标</h3>\n<ul>\n<li>开发新型生物传感器</li>\n<li>探索可持续生物技术</li>\n<li>培养未来的合成生物学家</li>\n</ul>',
-            features: { timeline: true, comments: true }
-        },
-        'team': {
-            title: '团队介绍',
-            content: '<h2>我们的团队</h2>\n<p>北师珠iGEM团队由一群充满热情的学生和导师组成。</p>\n<h3>团队成员</h3>\n<ul>\n<li>指导老师</li>\n<li>项目负责人</li>\n<li>实验室技术员</li>\n<li>数据分析</li>\n</ul>',
-            features: { timeline: false, comments: true }
-        },
-        'model': {
-            title: '模型设计',
-            content: '<h2>数学模型</h2>\n<p>我们使用先进的数学模型来模拟生物系统的行为。</p>\n<h3>模型类型</h3>\n<ul>\n<li>微分方程模型</li>\n<li>布尔网络模型</li>\n<li>基于Agent的模型</li>\n</ul>',
+        'home': {
+            title: 'BNU-iGEM 2025',
+            content: `<div class="home-container">
+    <div class="home-hero">
+        <h1 class="home-title">🧬 BNU-iGEM 2025</h1>
+        <p class="home-subtitle">智能合成生物学平台</p>
+    </div>
+    <div class="home-content">
+        <div class="home-section">
+            <h2>Welcome</h2>
+            <p>欢迎来到北师珠iGEM项目页面。本项目致力于通过合成生物学方法解决环境问题。</p>
+        </div>
+        <div class="home-cards">
+            <div class="home-card" onclick="loadWikiContent('description')">
+                <span class="card-icon">📋</span>
+                <h3>Project</h3>
+                <p>查看项目描述、设计方案和实施计划</p>
+            </div>
+            <div class="home-card" onclick="loadWikiContent('engineering')">
+                <span class="card-icon">🔬</span>
+                <h3>Wet Lab</h3>
+                <p>了解实验室工作、实验记录和研究成果</p>
+            </div>
+            <div class="home-card" onclick="loadWikiContent('ihp')">
+                <span class="card-icon">🤝</span>
+                <h3>Human Practice</h3>
+                <p>探索人文实践、教育和合作活动</p>
+            </div>
+        </div>
+    </div>
+</div>`,
             features: { timeline: false, comments: false }
         },
-        'lab': {
-            title: '实验室',
-            content: '<h2>实验设施</h2>\n<p>我们拥有先进的实验设备和完善的安全保障。</p>\n<h3>主要设备</h3>\n<ul>\n<li>PCR仪</li>\n<li>测序仪</li>\n<li>显微镜</li>\n<li>生物安全柜</li>\n</ul>',
-            features: { timeline: true, comments: false }
+        'description': {
+            title: 'Description',
+            content: '<h2>项目描述</h2><p>这是项目的基本描述页面。</p>',
+            features: { timeline: false, comments: false }
         },
-        'human': {
-            title: '人文实践',
-            content: '<h2>人文与社会实践</h2>\n<p>我们不仅关注科学研究，也重视社会责任。</p>\n<h3>活动内容</h3>\n<ul>\n<li>科普讲座</li>\n<li>校园展览</li>\n<li>社区服务</li>\n</ul>',
-            features: { timeline: false, comments: true }
+        'design': {
+            title: 'Design',
+            content: '<h2>设计方案</h2><p>这是项目的设计方案页面。</p>',
+            features: { timeline: false, comments: false }
+        },
+        'contribution': {
+            title: 'Contribution',
+            content: '<h2>贡献</h2><p>这是项目的贡献页面。</p>',
+            features: { timeline: false, comments: false }
+        },
+        'implementation': {
+            title: 'Implementation',
+            content: '<h2>实施</h2><p>这是项目的实施页面。</p>',
+            features: { timeline: false, comments: false }
+        },
+        'safety': {
+            title: 'Safety',
+            content: '<h2>安全</h2><p>这是项目的安全页面。</p>',
+            features: { timeline: false, comments: false }
+        },
+        'engineering': {
+            title: 'Engineering',
+            content: '<h2>工程</h2><p>这是湿实验室的工程页面。</p>',
+            features: { timeline: false, comments: false }
+        },
+        'notebook': {
+            title: 'Notebook',
+            content: '<h2>实验记录</h2><p>这是湿实验室的实验记录页面。</p>',
+            features: { timeline: false, comments: false }
+        },
+        'result': {
+            title: 'Result',
+            content: '<h2>结果</h2><p>这是湿实验室的结果页面。</p>',
+            features: { timeline: false, comments: false }
+        },
+        'protocol': {
+            title: 'Protocol',
+            content: '<h2>实验方案</h2><p>这是湿实验室的实验方案页面。</p>',
+            features: { timeline: false, comments: false }
         },
         'parts': {
-            title: '标准部件',
-            content: '<h2>生物标准部件库</h2>\n<p>我们收集和整理了多种标准化的生物部件。</p>\n<h3>部件分类</h3>\n<ul>\n<li>启动子</li>\n<li>编码序列</li>\n<li>终止子</li>\n<li>报告基因</li>\n</ul>',
+            title: 'Parts',
+            content: '<h2>标准部件</h2><p>这是标准生物部件页面。</p>',
+            features: { timeline: false, comments: false }
+        },
+        'proof-of-concept': {
+            title: 'Proof of Concept',
+            content: '<h2>概念验证</h2><p>这是概念验证页面。</p>',
+            features: { timeline: false, comments: false }
+        },
+        'future': {
+            title: 'Future',
+            content: '<h2>未来计划</h2><p>这是未来计划页面。</p>',
+            features: { timeline: false, comments: false }
+        },
+        'ihp': {
+            title: 'IHP',
+            content: '<h2>整合人文实践</h2><p>这是整合人文实践页面。</p>',
+            features: { timeline: false, comments: false }
+        },
+        'education': {
+            title: 'Education',
+            content: '<h2>教育</h2><p>这是教育页面。</p>',
+            features: { timeline: false, comments: false }
+        },
+        'inclusivity': {
+            title: 'Inclusivity',
+            content: '<h2>包容性</h2><p>这是包容性页面。</p>',
+            features: { timeline: false, comments: false }
+        },
+        'collaboration': {
+            title: 'Collaboration',
+            content: '<h2>合作</h2><p>这是合作页面。</p>',
             features: { timeline: false, comments: false }
         }
     }

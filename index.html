@@ -3,776 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebGL 海草动态模拟</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #001122 0%, #003344 100%);
-            color: #e6f7ff;
-            overflow: hidden;
-            height: 100vh;
-        }
-        
-        #container {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-        }
-        
-        #info {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 100;
-            background: rgba(0, 20, 40, 0.7);
-            padding: 15px 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-width: 300px;
-        }
-        
-        h1 {
-            font-size: 1.5rem;
-            background: linear-gradient(90deg, #4ecdc4, #44a08d);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-        }
-        
-        p {
-            font-size: 0.9rem;
-            color: #a8d8ff;
-            line-height: 1.4;
-            margin-bottom: 5px;
-        }
-        
-        .controls {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            z-index: 100;
-            background: rgba(0, 20, 40, 0.7);
-            padding: 15px 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .control-group {
-            margin-bottom: 10px;
-        }
-        
-        .control-label {
-            display: block;
-            font-size: 0.8rem;
-            color: #4ecdc4;
-            margin-bottom: 5px;
-        }
-        
-        .control-slider {
-            width: 200px;
-            height: 6px;
-            -webkit-appearance: none;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            outline: none;
-        }
-        
-        .control-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4ecdc4, #44a08d);
-            cursor: pointer;
-        }
-        
-        .control-value {
-            font-size: 0.8rem;
-            color: #44a08d;
-            font-weight: bold;
-            display: inline-block;
-            margin-left: 10px;
-        }
-        
-        .stats {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 100;
-            background: rgba(0, 20, 40, 0.7);
-            padding: 10px 15px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .stat-item {
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 1.2rem;
-            font-weight: bold;
-            background: linear-gradient(90deg, #4ecdc4, #44a08d);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .stat-label {
-            font-size: 0.7rem;
-            color: #a8d8ff;
-        }
-        
-        .loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #001122;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        
-        .loading-bar {
-            width: 300px;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-            overflow: hidden;
-            margin-top: 20px;
-        }
-        
-        .loading-progress {
-            height: 100%;
-            background: linear-gradient(90deg, #4ecdc4, #44a08d);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-        
-        @media (max-width: 768px) {
-            #info, .controls, .stats {
-                padding: 10px;
-                max-width: calc(100vw - 40px);
+    <title>北师珠iGEM Wiki - 智能合成生物学平台</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧬</text></svg>">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                packages: {'[+]': ['newcommand', 'enclose', 'amsCd', 'cases', 'boldsymbol']},
+                macros: {
+                    'section': ['\\text{\\Large\\textbf{#1}}', 1],
+                    'subsection': ['\\text{\\large\\textbf{#1}}', 1],
+                    'subsubsection': ['\\text{\\textit{#1}}', 1],
+                    'label': ['', 1],
+                    'ref': ['\\text{[#1]}', 1],
+                    'cite': ['\\text{\\underline{#1}}', 1],
+                    'centering': '',
+                    'includegraphics': ['\\text{[图片:#1]}', 1],
+                    'caption': ['\\text{\\textit{#1}}', 1],
+                    'emph': ['{\\em #1}', 1],
+                    'qed': '\\square',
+                    'degree': '^\\circ',
+                    'vec': ['\\mathbf{#1}', 1],
+                    'mathscr': ['\\mathscr{#1}', 1],
+                    'alldots': '\\alldots',
+                    'pmod': ['\\pmod{#1}', 1],
+                    'bmod': ['\\bmod{#1}', 1],
+                    'card': '\\card',
+                    'vol': '\\vol',
+                    'grad': '\\grad',
+                    'curl': '\\curl',
+                    'laplace': '\\laplace'
+                },
+                environments: {
+                    'figure': ['', ''],
+                    'table': ['', ''],
+                    'equation': ['$$', '$$'],
+                    'align': ['$$\\begin{aligned}', '\\end{aligned}$$'],
+                    'align*': ['$$\\begin{aligned}', '\\end{aligned}$$'],
+                    'gather': ['$$', '$$'],
+                    'gather*': ['$$', '$$'],
+                    'equation*': ['$$', '$$'],
+                    'multline': ['$$', '$$'],
+                    'multline*': ['$$', '$$'],
+                    'split': ['', ''],
+                    'cases': ['$$\\begin{cases}', '\\end{cases}$$'],
+                    'aligned': ['', ''],
+                    'gathered': ['', ''],
+                    'alignedat': ['', ''],
+                    'matrix': ['$$\\begin{matrix}', '\\end{matrix}$$'],
+                    'pmatrix': ['$$\\begin{pmatrix}', '\\end{pmatrix}$$'],
+                    'bmatrix': ['$$\\begin{bmatrix}', '\\end{bmatrix}$$'],
+                    'Bmatrix': ['$$\\begin{Bmatrix}', '\\end{Bmatrix}$$'],
+                    'vmatrix': ['$$\\begin{vmatrix}', '\\end{vmatrix}$$'],
+                    'Vmatrix': ['$$\\begin{Vmatrix}', '\\end{Vmatrix}$$'],
+                    'array': ['', ''],
+                    'tabular': ['', ''],
+                    'itemize': ['', ''],
+                    'enumerate': ['', ''],
+                    'description': ['', ''],
+                    'list': ['', ''],
+                    'theorem': ['', ''],
+                    'lemma': ['', ''],
+                    'corollary': ['', ''],
+                    'proposition': ['', ''],
+                    'definition': ['', ''],
+                    'remark': ['', ''],
+                    'example': ['', ''],
+                    'proof': ['', ''],
+                    'note': ['', ''],
+                    'warning': ['', ''],
+                    'info': ['', ''],
+                    'abstract': ['', ''],
+                    'acknowledgments': ['', ''],
+                    'appendix': ['', ''],
+                    'bibliography': ['', ''],
+                    'index': ['', ''],
+                    'glossary': ['', ''],
+                    'contents': ['', ''],
+                    'listoffigures': ['', ''],
+                    'listoftables': ['', ''],
+                    'verbatim': ['', ''],
+                    'center': ['', '']
+                }
+            },
+            svg: {
+                fontCache: 'global'
             }
-            
-            .control-slider {
-                width: 150px;
-            }
-        }
-    </style>
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="container"></div>
-    
-    <div id="info">
-        <h1>真实海草动态模拟</h1>
-        <p>基于 WebGL 的实时物理模拟</p>
-        <p>鼠标拖动旋转视角，滚轮缩放</p>
-        <p>每个海草通过纹理贴图和物理算法生成</p>
-    </div>
-    
-    <div class="controls">
-        <div class="control-group">
-            <label class="control-label">水流强度: <span id="currentValue" class="control-value">0.5</span></label>
-            <input type="range" class="control-slider" id="currentStrength" min="0" max="1" value="0.5" step="0.1">
+    <header class="header">
+        <div class="header-container">
+            <a href="#" class="logo">
+                <span class="logo-icon">🧬</span>
+                <div>
+                    <div class="logo-text">BNU-iGEM</div>
+                    <div class="logo-subtext">智能合成生物学平台</div>
+                </div>
+            </a>
+            <nav class="main-nav">
+                <a href="#" class="nav-link home-link active" data-page="home">Home</a>
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-toggle">Project</button>
+                    <div class="nav-dropdown-content">
+                        <a href="#" class="nav-link active" data-page="description">Description</a>
+                        <a href="#" class="nav-link" data-page="design">Design</a>
+                        <a href="#" class="nav-link" data-page="contribution">Contribution</a>
+                        <a href="#" class="nav-link" data-page="implementation">Implementation</a>
+                        <a href="#" class="nav-link" data-page="safety">Safety</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-toggle">Wet Lab</button>
+                    <div class="nav-dropdown-content">
+                        <a href="#" class="nav-link" data-page="engineering">Engineering</a>
+                        <a href="#" class="nav-link" data-page="notebook">Notebook</a>
+                        <a href="#" class="nav-link" data-page="result">Result</a>
+                        <a href="#" class="nav-link" data-page="protocol">Protocol</a>
+                        <a href="#" class="nav-link" data-page="parts">Parts</a>
+                        <a href="#" class="nav-link" data-page="proof-of-concept">Proof of Concept</a>
+                        <a href="#" class="nav-link" data-page="future">Future</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-toggle">Human Practice</button>
+                    <div class="nav-dropdown-content">
+                        <a href="#" class="nav-link" data-page="ihp">IHP</a>
+                        <a href="#" class="nav-link" data-page="education">Education</a>
+                        <a href="#" class="nav-link" data-page="inclusivity">Inclusivity</a>
+                        <a href="#" class="nav-link" data-page="collaboration">Collaboration</a>
+                    </div>
+                </div>
+                <button id="exportAllBtn" class="export-btn">导出全部数据</button>
+            </nav>
         </div>
-        
-        <div class="control-group">
-            <label class="control-label">摆动频率: <span id="swayValue" class="control-value">1.0</span></label>
-            <input type="range" class="control-slider" id="swayFrequency" min="0.1" max="2" value="1.0" step="0.1">
+    </header>
+
+    <main class="main-content">
+        <div class="content-loading" id="contentLoading">
+            <div class="loading-spinner"></div>
+            <p>正在加载内容...</p>
         </div>
-        
-        <div class="control-group">
-            <label class="control-label">柔软度: <span id="flexValue" class="control-value">0.7</span></label>
-            <input type="range" class="control-slider" id="flexibility" min="0.1" max="1" value="0.7" step="0.1">
+        <div class="edit-toolbar" id="editToolbar">
+            <button id="editContentBtn" class="edit-btn">编辑页面</button>
+            <span id="editStatus" class="edit-status"></span>
         </div>
-    </div>
-    
-    <div class="stats">
-        <div class="stat-item">
-            <div class="stat-value" id="fps">0</div>
-            <div class="stat-label">FPS</div>
+        <div class="content-container" id="wikiContent">
         </div>
-    </div>
-    
-    <div class="loading" id="loading">
-        <h1>正在初始化海草场景...</h1>
-        <div class="loading-bar">
-            <div class="loading-progress" id="loadingProgress"></div>
+
+        <div id="editorContainer" style="display:none;">
+            <div class="format-toolbar" id="formatToolbar" style="display:none;">
+                <button class="format-btn" data-format="h2">标题2</button>
+                <button class="format-btn" data-format="h3">标题3</button>
+                <button class="format-btn" data-format="h4">标题4</button>
+                <button class="format-btn" data-format="h5">标题5</button>
+                <button class="format-btn" data-format="h6">标题6</button>
+                <button class="format-btn" data-format="strong">强调</button>
+                <button class="format-btn" data-format="reference">引用</button>
+                <button class="format-btn" data-format="img">图片</button>
+                <button class="format-btn" data-format="ul">列表</button>
+                <button class="format-btn" data-format="latex-inline">行内LaTeX</button>
+                <button class="format-btn" data-format="latex-block">块级LaTeX</button>
+                <button class="image-insert-btn" id="insertImageBtn">插入图片语法</button>
+                <div class="paper-mode-toggle">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="paperModeToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span>纸张模式</span>
+                </div>
+            </div>
+            <textarea id="contentEditor" class="content-editor" placeholder="在此输入内容..."></textarea>
+            <div style="margin-top:1rem; display:flex; gap:1rem;">
+                <button id="saveContentBtn" class="edit-btn save-btn" style="display:none;">保存</button>
+                <button id="cancelEditBtn" class="edit-btn" style="display:none; background:#95a5a6;">取消</button>
+            </div>
         </div>
-    </div>
-    
-    <script>
-        // 纹理加载状态
-        let textureLoaded = false;
-        
-        // 主类
-        class SeaweedScene {
-            constructor() {
-                this.container = document.getElementById('container');
-                this.loading = document.getElementById('loading');
-                this.loadingProgress = document.getElementById('loadingProgress');
-                
-                // 物理参数
-                this.params = {
-                    currentStrength: 0.5,
-                    swayFrequency: 1.0,
-                    flexibility: 0.7
-                };
-                
-                // 初始化
-                this.init();
-            }
-            
-            init() {
-                // 1. 初始化 Three.js 渲染器
-                this.initThreeJS();
-                
-                // 2. 创建场景元素（异步）
-                this.createScene().then(() => {
-                    // 3. 绑定事件
-                    this.bindEvents();
-                    
-                    // 4. 开始动画
-                    this.animate();
-                    
-                    // 5. 加载完成处理
-                    setTimeout(() => {
-                        this.hideLoading();
-                    }, 1000);
-                });
-            }
-            
-            initThreeJS() {
-                // 创建场景
-                this.scene = new THREE.Scene();
-                this.scene.fog = new THREE.Fog(0x001122, 10, 50);
-                
-                // 创建相机
-                this.camera = new THREE.PerspectiveCamera(
-                    60, 
-                    window.innerWidth / window.innerHeight, 
-                    0.1, 
-                    1000
-                );
-                this.camera.position.set(0, 5, 10);
-                
-                // 创建渲染器
-                this.renderer = new THREE.WebGLRenderer({ 
-                    antialias: true,
-                    alpha: true
-                });
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.renderer.setPixelRatio(window.devicePixelRatio);
-                this.renderer.setClearColor(0x001122, 1);
-                this.container.appendChild(this.renderer.domElement);
-                
-                // 添加控制器
-                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
-                this.controls.enableDamping = true;
-                this.controls.dampingFactor = 0.05;
-                this.controls.maxPolarAngle = Math.PI * 0.8;
-                this.controls.minDistance = 5;
-                this.controls.maxDistance = 30;
-                
-                // 初始化 FPS 计数器
-                this.fpsCounter = document.getElementById('fps');
-                this.frameCount = 0;
-                this.lastFpsUpdate = performance.now();
-            }
-            
-            async createScene() {
-                // 添加环境光
-                const ambientLight = new THREE.AmbientLight(0x336688, 0.3);
-                this.scene.add(ambientLight);
-                
-                // 添加方向光（模拟水下光线）
-                const directionalLight = new THREE.DirectionalLight(0x88ccff, 0.5);
-                directionalLight.position.set(5, 10, 7);
-                directionalLight.castShadow = true;
-                this.scene.add(directionalLight);
-                
-                // 创建水下聚光灯
-                const spotlight = new THREE.SpotLight(0x44a08d, 0.8, 50, Math.PI / 6, 0.2, 2);
-                spotlight.position.set(0, 15, 0);
-                spotlight.target.position.set(0, 0, 0);
-                this.scene.add(spotlight);
-                this.scene.add(spotlight.target);
-                
-                // 创建海床
-                this.createSeaBed();
-                
-                // 创建海草（异步加载纹理）
-                await this.createSeaweeds();
-                
-                // 创建气泡群
-                this.createBubbles();
-                
-                // 创建水面效果
-                this.createWaterEffect();
-                
-                // 更新加载进度
-                this.updateLoadingProgress(100);
-            }
-            
-            createSeaBed() {
-                // 创建海床几何体
-                const seaBedGeometry = new THREE.PlaneGeometry(30, 30, 20, 20);
-                
-                // 添加一些高度变化
-                const positions = seaBedGeometry.attributes.position.array;
-                for (let i = 0; i < positions.length; i += 3) {
-                    const x = positions[i];
-                    const z = positions[i + 2];
-                    positions[i + 1] = -0.5 + Math.sin(x * 0.5) * Math.cos(z * 0.5) * 0.3;
-                }
-                seaBedGeometry.attributes.position.needsUpdate = true;
-                seaBedGeometry.computeVertexNormals();
-                
-                // 创建材质
-                const seaBedMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x2a4d3c,
-                    roughness: 0.8,
-                    metalness: 0.1
-                });
-                
-                // 创建网格
-                const seaBed = new THREE.Mesh(seaBedGeometry, seaBedMaterial);
-                seaBed.rotation.x = -Math.PI / 2;
-                seaBed.receiveShadow = true;
-                this.scene.add(seaBed);
-            }
-            
-            async createSeaweeds() {
-                this.seaweeds = [];
-                
-                // 创建程序化纹理作为备用
-                const createProceduralTexture = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 512;
-                    canvas.height = 1024;
-                    const ctx = canvas.getContext('2d');
-                    
-                    // 创建渐变背景
-                    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-                    gradient.addColorStop(0, '#8ade78');      // 顶部亮绿色
-                    gradient.addColorStop(0.3, '#5dd879');   // 中上部绿色
-                    gradient.addColorStop(0.6, '#2eb85c');   // 中部绿色
-                    gradient.addColorStop(1, '#1a8a42');     // 底部深绿色
-                    
-                    ctx.fillStyle = gradient;
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    // 添加叶脉
-                    ctx.strokeStyle = 'rgba(0, 80, 40, 0.3)';
-                    ctx.lineWidth = 3;
-                    for (let i = 0; i < 8; i++) {
-                        const x = 100 + i * 45;
-                        ctx.beginPath();
-                        ctx.moveTo(x, 0);
-                        ctx.lineTo(x + Math.sin(i) * 15, canvas.height);
-                        ctx.stroke();
-                    }
-                    
-                    // 添加斑点
-                    for (let i = 0; i < 50; i++) {
-                        ctx.fillStyle = `rgba(0, 60, 30, ${0.05 + Math.random() * 0.1})`;
-                        ctx.beginPath();
-                        ctx.ellipse(
-                            Math.random() * canvas.width,
-                            Math.random() * canvas.height,
-                            5 + Math.random() * 15,
-                            30 + Math.random() * 60,
-                            0, 0, Math.PI * 2
-                        );
-                        ctx.fill();
-                    }
-                    
-                    return new THREE.CanvasTexture(canvas);
-                };
-                
-                // 从外部文件读取 Base64 纹理
-                const getBase64Texture = async () => {
-                    try {
-                        const response = await fetch('./seaweed-base64-code.txt');
-                        const text = await response.text();
-                        
-                        // 文件内容格式: return 'data:image/png;base64,...'
-                        const match = text.match(/return\s+['"](data:[^'"]+)['"]/);
-                        if (match && match[1]) {
-                            console.log('✓ 从外部文件加载 Base64 纹理成功！');
-                            return match[1];
-                        }
-                    } catch (error) {
-                        console.warn('⚠ 读取 Base64 文件失败:', error);
-                    }
-                    return null;
-                };
-                
-                // 尝试加载纹理（优先 Base64，其次外部文件，最后程序化）
-                let seaweedTexture;
-                
-                // 1. 先尝试 Base64 纹理
-                const base64Data = await getBase64Texture();
-                if (base64Data) {
-                    const textureLoader = new THREE.TextureLoader();
-                    seaweedTexture = textureLoader.load(base64Data);
-                    seaweedTexture.wrapS = seaweedTexture.wrapT = THREE.ClampToEdgeWrapping;
-                    seaweedTexture.magFilter = THREE.LinearFilter;
-                    seaweedTexture.minFilter = THREE.LinearMipmapLinearFilter;
-                    console.log('✓ 海草纹理（Base64）加载成功！');
-                } else {
-                    // 2. 尝试加载外部纹理文件
-                    const textureLoader = new THREE.TextureLoader();
-                    const fallbackTexture = createProceduralTexture();
-                    
-                    try {
-                        seaweedTexture = await new Promise((resolve, reject) => {
-                            textureLoader.load(
-                                './seaweed.png',
-                                (texture) => resolve(texture),
-                                undefined,
-                                (error) => reject(error)
-                            );
-                        });
-                        
-                        seaweedTexture.wrapS = seaweedTexture.wrapT = THREE.ClampToEdgeWrapping;
-                        seaweedTexture.magFilter = THREE.LinearFilter;
-                        seaweedTexture.minFilter = THREE.LinearMipmapLinearFilter;
-                        console.log('✓ 海草纹理（PNG文件）加载成功！');
-                    } catch (error) {
-                        // 3. 加载失败，使用程序化纹理
-                        console.warn('⚠ 海草纹理加载失败，使用程序化纹理:', error);
-                        seaweedTexture = fallbackTexture;
-                    }
-                }
-                
-                // 创建海草材质（使用纹理）
-                const seaweedMaterial = new THREE.ShaderMaterial({
-                    uniforms: {
-                        time: { value: 0 },
-                        currentStrength: { value: this.params.currentStrength },
-                        swayFrequency: { value: this.params.swayFrequency },
-                        flexibility: { value: this.params.flexibility },
-                        seaweedTexture: { value: seaweedTexture },
-                        underwaterColor: { value: new THREE.Color(0x2060a0) },
-                        lightIntensity: { value: 1.2 }
-                    },
-                    vertexShader: `
-                        uniform float time;
-                        uniform float currentStrength;
-                        uniform float swayFrequency;
-                        uniform float flexibility;
-                        
-                        varying vec2 vUv;
-                        varying vec3 vPosition;
-                        varying vec3 vNormal;
-                        
-                        void main() {
-                            vUv = uv;
-                            
-                            vec3 pos = position;
-                            
-                            // --- 保持原有物理摆动计算 ---
-                            float sway = sin(time * swayFrequency + pos.y * 2.0) * currentStrength * flexibility;
-                            float turbulence = sin(time * 1.5 + pos.x * 2.0 + pos.y * 3.0) * 0.2;
-                            turbulence += cos(time * 2.0 + pos.z * 2.0 + pos.y * 1.5) * 0.15;
-                            float heightFactor = pos.y;
-                            float totalSway = (sway + turbulence) * heightFactor;
-                            pos.x += totalSway * 0.5;
-                            pos.z += totalSway * 0.3;
-                            // --- 计算结束 ---
-                            
-                            vPosition = pos;
-                            vNormal = normalize(normalMatrix * normal);
-                            
-                            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-                        }
-                    `,
-                    fragmentShader: `
-                        uniform sampler2D seaweedTexture;
-                        uniform vec3 underwaterColor;
-                        uniform float lightIntensity;
-                        
-                        varying vec2 vUv;
-                        varying vec3 vPosition;
-                        varying vec3 vNormal;
-                        
-                        void main() {
-                            // 1. 从纹理采样颜色
-                            vec4 texColor = texture2D(seaweedTexture, vUv);
-                            
-                            // 2. 如果纹理加载失败，使用纯绿色
-                            if (length(texColor.rgb) < 0.01) {
-                                texColor = vec4(0.4, 0.7, 0.3, 1.0);
-                            }
-                            
-                            // 3. 基础颜色增强
-                            vec3 baseColor = texColor.rgb * 1.2; // 增强颜色亮度
-                            
-                            // 4. 添加环境光照
-                            float ambient = 0.6;
-                            vec3 finalColor = baseColor * ambient;
-                            
-                            // 5. 添加深度色调（轻微的蓝绿色）
-                            float depthFactor = clamp(vPosition.y / 3.0, 0.0, 1.0);
-                            vec3 waterTint = mix(underwaterColor * 0.3, vec3(1.0), depthFactor);
-                            finalColor *= waterTint;
-                            
-                            // 6. 增加整体亮度
-                            finalColor *= lightIntensity;
-                            
-                            // 7. 确保颜色不太暗
-                            finalColor = max(finalColor, vec3(0.15, 0.2, 0.15));
-                            
-                            // 8. 获取透明度
-                            float alpha = max(texColor.a, 0.7); // 确保有透明度
-                            
-                            gl_FragColor = vec4(finalColor, alpha);
-                        }
-                    `,
-                    transparent: true,
-                    side: THREE.DoubleSide
-                });
-                
-                // 生成海草实例
-                const seaweedCount = 25;
-                for (let i = 0; i < seaweedCount; i++) {
-                    this.createSingleSeaweedWithTexture(seaweedMaterial, i);
-                }
-            }
-            
-            createSingleSeaweedWithTexture(material, index) {
-                // 使用平面几何体，宽度0.5，高度3
-                const seaweedGeometry = new THREE.PlaneGeometry(0.5, 3, 1, 16);
-                
-                // 设置位置
-                const angle = (index / 25) * Math.PI * 2;
-                const radius = 2 + Math.random() * 6;
-                const x = Math.cos(angle) * radius;
-                const z = Math.sin(angle) * radius;
-                
-                // 设置随机旋转
-                const rotation = Math.random() * Math.PI * 2;
-                
-                // 创建材质副本
-                const seaweed = new THREE.Mesh(seaweedGeometry, material.clone());
-                seaweed.position.set(x, 1.5, z);
-                seaweed.rotation.y = rotation;
-                
-                // 存储数据
-                this.seaweeds.push({
-                    mesh: seaweed,
-                    material: seaweed.material,
-                    swayOffset: Math.random() * Math.PI * 2
-                });
-                
-                this.scene.add(seaweed);
-            }
-            
-            createBubbles() {
-                // 创建气泡几何体
-                const bubbleGeometry = new THREE.SphereGeometry(0.05, 8, 8);
-                const bubbleMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x88ccff,
-                    transparent: true,
-                    opacity: 0.6
-                });
-                
-                this.bubbles = [];
-                const bubbleCount = 30;
-                
-                for (let i = 0; i < bubbleCount; i++) {
-                    const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
-                    
-                    // 设置位置
-                    bubble.position.set(
-                        (Math.random() - 0.5) * 20,
-                        Math.random() * 2 - 1,
-                        (Math.random() - 0.5) * 20
-                    );
-                    
-                    // 设置速度
-                    bubble.userData = {
-                        speed: 0.2 + Math.random() * 0.3,
-                        sway: (Math.random() - 0.5) * 0.1
-                    };
-                    
-                    this.bubbles.push(bubble);
-                    this.scene.add(bubble);
-                }
-            }
-            
-            createWaterEffect() {
-                // 创建水面
-                const waterGeometry = new THREE.PlaneGeometry(40, 40, 1, 1);
-                const waterMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x001a33,
-                    transparent: true,
-                    opacity: 0.1,
-                    side: THREE.DoubleSide
-                });
-                
-                const water = new THREE.Mesh(waterGeometry, waterMaterial);
-                water.rotation.x = -Math.PI / 2;
-                water.position.y = 8;
-                this.scene.add(water);
-                
-                // 创建水下体积光
-                const volumeGeometry = new THREE.BoxGeometry(25, 10, 25);
-                const volumeMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x003366,
-                    transparent: true,
-                    opacity: 0.05,
-                    side: THREE.BackSide
-                });
-                
-                const waterVolume = new THREE.Mesh(volumeGeometry, volumeMaterial);
-                waterVolume.position.y = 3;
-                this.scene.add(waterVolume);
-            }
-            
-            updateSeaweeds(deltaTime) {
-                const time = performance.now() * 0.001;
-                
-                this.seaweeds.forEach((seaweed, index) => {
-                    const material = seaweed.material;
-                    
-                    // 更新着色器 uniform
-                    material.uniforms.time.value = time + seaweed.swayOffset;
-                    material.uniforms.currentStrength.value = this.params.currentStrength;
-                    material.uniforms.swayFrequency.value = this.params.swayFrequency;
-                    material.uniforms.flexibility.value = this.params.flexibility;
-                    
-                    // 光照脉冲效果
-                    const lightPulse = 0.9 + Math.sin(time * 0.5) * 0.1;
-                    material.uniforms.lightIntensity.value = lightPulse;
-                    
-                    // 细微的随机旋转
-                    seaweed.mesh.rotation.y += Math.sin(time + index) * 0.01 * deltaTime;
-                });
-            }
-            
-            updateBubbles(deltaTime) {
-                const time = performance.now() * 0.001;
-                
-                this.bubbles.forEach((bubble, index) => {
-                    // 向上运动
-                    bubble.position.y += bubble.userData.speed * deltaTime;
-                    
-                    // 细微的水平摆动
-                    bubble.position.x += Math.sin(time + index) * bubble.userData.sway * deltaTime;
-                    bubble.position.z += Math.cos(time + index) * bubble.userData.sway * deltaTime;
-                    
-                    // 气泡大小变化
-                    const scale = 1 + Math.sin(time * 2 + index) * 0.1;
-                    bubble.scale.setScalar(scale);
-                    
-                    // 重置超出范围的气泡
-                    if (bubble.position.y > 8) {
-                        bubble.position.y = Math.random() * 2 - 1;
-                        bubble.position.x = (Math.random() - 0.5) * 20;
-                        bubble.position.z = (Math.random() - 0.5) * 20;
-                    }
-                });
-            }
-            
-            bindEvents() {
-                // 窗口大小变化
-                window.addEventListener('resize', () => this.onWindowResize());
-                
-                // 控制滑块
-                const currentSlider = document.getElementById('currentStrength');
-                const swaySlider = document.getElementById('swayFrequency');
-                const flexSlider = document.getElementById('flexibility');
-                
-                currentSlider.addEventListener('input', (e) => {
-                    this.params.currentStrength = parseFloat(e.target.value);
-                    document.getElementById('currentValue').textContent = e.target.value;
-                });
-                
-                swaySlider.addEventListener('input', (e) => {
-                    this.params.swayFrequency = parseFloat(e.target.value);
-                    document.getElementById('swayValue').textContent = e.target.value;
-                });
-                
-                flexSlider.addEventListener('input', (e) => {
-                    this.params.flexibility = parseFloat(e.target.value);
-                    document.getElementById('flexValue').textContent = e.target.value;
-                });
-            }
-            
-            onWindowResize() {
-                this.camera.aspect = window.innerWidth / window.innerHeight;
-                this.camera.updateProjectionMatrix();
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-            }
-            
-            updateFPS() {
-                this.frameCount++;
-                const now = performance.now();
-                const elapsed = now - this.lastFpsUpdate;
-                
-                if (elapsed >= 1000) {
-                    const fps = Math.round((this.frameCount * 1000) / elapsed);
-                    this.fpsCounter.textContent = fps;
-                    this.frameCount = 0;
-                    this.lastFpsUpdate = now;
-                }
-            }
-            
-            animate() {
-                requestAnimationFrame(() => this.animate());
-                
-                const deltaTime = 0.016; // 固定时间步长
-                
-                // 更新控制器
-                this.controls.update();
-                
-                // 更新海草
-                this.updateSeaweeds(deltaTime);
-                
-                // 更新气泡
-                this.updateBubbles(deltaTime);
-                
-                // 更新 FPS
-                this.updateFPS();
-                
-                // 渲染场景
-                this.renderer.render(this.scene, this.camera);
-            }
-            
-            updateLoadingProgress(progress) {
-                this.loadingProgress.style.width = `${progress}%`;
-            }
-            
-            hideLoading() {
-                this.loading.style.opacity = '0';
-                this.loading.style.pointerEvents = 'none';
-                setTimeout(() => {
-                    this.loading.style.display = 'none';
-                }, 500);
-            }
-        }
-        
-        // 初始化场景
-        window.addEventListener('DOMContentLoaded', () => {
-            new SeaweedScene();
-        });
-    </script>
+
+        <section class="timeline-section" id="timelineSection" style="display:none;">
+            <div class="timeline-header">
+                <h2 class="timeline-title">📅 项目时间轴</h2>
+                <button class="timeline-add-btn" id="addTimelineBtn">添加事件</button>
+            </div>
+            <div class="timeline-container" id="timelineContainer"></div>
+        </section>
+
+        <section class="comment-section" id="commentSection" style="display:none;">
+            <h2 style="margin-bottom:1.5rem; color:var(--primary-color);">💬 留言板</h2>
+            <div class="comment-input">
+                <select id="commentAuthor" class="comment-author-select">
+                    <option value="匿名用户">匿名用户</option>
+                    <option value="团队成员">团队成员</option>
+                    <option value="指导老师">指导老师</option>
+                </select>
+                <textarea id="commentText" class="comment-textarea" placeholder="请输入留言内容..."></textarea>
+                <button id="commentSubmitBtn" class="comment-submit-btn">发布</button>
+            </div>
+            <div class="comments-list" id="commentsList"></div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-info">
+                <p>© 2024 BNU-iGEM Team. All Rights Reserved.</p>
+                <p>北京师范大学珠海分校 | 智能合成生物学平台</p>
+            </div>
+            <div class="footer-links">
+                <a href="https://igem.org" target="_blank" class="footer-link">iGEM官网</a>
+                <a href="https://competition.igem.org" target="_blank" class="footer-link">竞赛信息</a>
+                <a href="#" class="footer-link">关于我们</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="markdown.js"></script>
+    <script src="images.js"></script>
+    <script src="social.js"></script>
+    <script src="core.js"></script>
 </body>
 </html>
