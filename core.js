@@ -94,58 +94,7 @@ async function loadWikiContent() {
     container.style.display = 'none';
     
     loading.style.display = 'block';
-    loading.innerHTML = `
-        <div class="pine-loading">
-            <div class="microscope-ring">
-                <div class="microscope-ring-inner"></div>
-            </div>
-            <div class="pine-dna-container">
-                <div class="dna-helix dna-helix-left">
-                    <svg viewBox="0 0 30 160" class="dna-strand">
-                        <path class="dna-path" d="M15,0 C-15,40 45,80 15,120 C-15,160 45,200 15,240" fill="none" stroke="currentColor" stroke-width="2.5"/>
-                        <circle class="dna-dot d1" cx="15" cy="0" r="3.5"/>
-                        <circle class="dna-dot d2" cx="15" cy="40" r="3.5"/>
-                        <circle class="dna-dot d3" cx="15" cy="80" r="3.5"/>
-                        <circle class="dna-dot d4" cx="15" cy="120" r="3.5"/>
-                        <circle class="dna-dot d5" cx="15" cy="160" r="3.5"/>
-                        <line class="base-pair b1" x1="15" y1="20" x2="45" y2="20"/>
-                        <line class="base-pair b2" x1="15" y1="60" x2="-15" y2="60"/>
-                        <line class="base-pair b3" x1="15" y1="100" x2="45" y2="100"/>
-                        <line class="base-pair b4" x1="15" y1="140" x2="-15" y2="140"/>
-                    </svg>
-                </div>
-                <div class="pine-tree">
-                    <div class="pine-crown">
-                        <div class="pine-layer p1"></div>
-                        <div class="pine-layer p2"></div>
-                        <div class="pine-layer p3"></div>
-                    </div>
-                    <div class="pine-trunk"></div>
-                </div>
-                <div class="dna-helix dna-helix-right">
-                    <svg viewBox="0 0 30 160" class="dna-strand">
-                        <path class="dna-path" d="M15,0 C45,40 -15,80 15,120 C45,160 -15,200 15,240" fill="none" stroke="currentColor" stroke-width="2.5"/>
-                        <circle class="dna-dot d1" cx="15" cy="0" r="3.5"/>
-                        <circle class="dna-dot d2" cx="15" cy="40" r="3.5"/>
-                        <circle class="dna-dot d3" cx="15" cy="80" r="3.5"/>
-                        <circle class="dna-dot d4" cx="15" cy="120" r="3.5"/>
-                        <circle class="dna-dot d5" cx="15" cy="160" r="3.5"/>
-                    </svg>
-                </div>
-            </div>
-            <div class="pine-needles">
-                <span class="needle n1">—</span><span class="needle n2">—</span>
-                <span class="needle n3">—</span><span class="needle n4">\\</span>
-                <span class="needle n5">/</span><span class="needle n6">—</span>
-                <span class="needle n7">\\</span><span class="needle n8">/</span>
-            </div>
-            <div class="pine-loading-text">
-                <span class="loading-text-main">正在加载 ${CONFIG.currentPage}</span>
-                <span class="loading-text-dots">
-                    <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
-                </span>
-            </div>
-        </div>`;
+    loading.innerHTML = `<div class="simple-loading">正在加载 ${CONFIG.currentPage}...</div>`;
     
     CONFIG.isLoading = true;
     
@@ -203,11 +152,9 @@ async function loadWikiContent() {
         
         if (data.record) {
             if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 准备调用 renderWikiContent(data.record)');
-            CONFIG.__retriedOnce = false; // 重置重试标记
             renderWikiContent(data.record);
         } else if (data.content) {
             if (CONFIG.DEBUG_MODE) console.log('[DEBUG] data.record不存在，尝试直接使用data');
-            CONFIG.__retriedOnce = false; // 重置重试标记
             renderWikiContent(data);
         } else {
             if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 数据中没有record和content字段');
@@ -225,16 +172,6 @@ async function loadWikiContent() {
             if (targetPageForThisRequest === CONFIG.currentPage && isTimeout) {
                 CONFIG.isLoading = false;
                 loading.style.display = 'none';
-                // 冷启动到 jsonbin.io 经常慢，第一次失败后自动重试一次（更短超时）
-                if (!CONFIG.__retriedOnce) {
-                    CONFIG.__retriedOnce = true;
-                    if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 超时后自动重试一次: ${CONFIG.currentPage}`);
-                    loading.style.display = 'block';
-                    loading.innerHTML = `<div class="pine-loading"><div class="microscope-ring"><div class="microscope-ring-inner"></div></div><div class="pine-dna-container"><div class="pine-tree"><div class="pine-crown"><div class="pine-layer p1"></div><div class="pine-layer p2"></div><div class="pine-layer p3"></div></div><div class="pine-trunk"></div></div></div><div class="pine-loading-text"><span class="loading-text-main">正在重新连接 ${CONFIG.currentPage}</span><span class="loading-text-dots"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span></div></div>`;
-                    // 短延迟后重试，让用户感知到
-                    setTimeout(() => { loadWikiContent(); }, 300);
-                    return;
-                }
                 showError(`请求超时: ${CONFIG.currentPage}`);
             }
             
@@ -245,15 +182,6 @@ async function loadWikiContent() {
         
         // 7. 仅当错误发生在当前仍然活跃的页面上时，才显示错误
         if (targetPageForThisRequest === CONFIG.currentPage) {
-            // 网络错误也自动重试一次
-            if (!CONFIG.__retriedOnce) {
-                CONFIG.__retriedOnce = true;
-                if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 网络错误后自动重试一次: ${CONFIG.currentPage}`);
-                loading.style.display = 'block';
-                loading.innerHTML = `<div class="pine-loading"><div class="microscope-ring"><div class="microscope-ring-inner"></div></div><div class="pine-dna-container"><div class="pine-tree"><div class="pine-crown"><div class="pine-layer p1"></div><div class="pine-layer p2"></div><div class="pine-layer p3"></div></div><div class="pine-trunk"></div></div></div><div class="pine-loading-text"><span class="loading-text-main">正在重新连接 ${CONFIG.currentPage}</span><span class="loading-text-dots"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span></div></div>`;
-                setTimeout(() => { loadWikiContent(); }, 300);
-                return;
-            }
             showError(`加载失败: ${error.message}`);
         } else {
             if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 错误发生在已切换的旧页面(${targetPageForThisRequest})上，忽略`);
