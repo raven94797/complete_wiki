@@ -81,7 +81,7 @@ async function loadWikiContent() {
     
     if (CONFIG.currentPage === 'home') {
         loading.style.display = 'none';
-        renderWikiContent(CONFIG.FALLBACK_DATA['home']);
+        showError('Home页面需要从JSONBin加载数据，但当前未配置');
         return;
     }
     
@@ -159,11 +159,7 @@ async function loadWikiContent() {
             renderWikiContent(data);
         } else {
             if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 数据中没有record和content字段');
-            // 使用备用数据
-            if (CONFIG.USE_FALLBACK_DATA && CONFIG.FALLBACK_DATA[CONFIG.currentPage]) {
-                if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 使用备用数据');
-                renderWikiContent(CONFIG.FALLBACK_DATA[CONFIG.currentPage]);
-            }
+            showError(`API返回的数据格式不正确: ${CONFIG.currentPage}`);
         }
         
     } catch (error) {
@@ -172,16 +168,11 @@ async function loadWikiContent() {
             // 这是预期内的中止，通常因页面切换或超时导致，无需作为错误提示给用户
             if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 请求被中止 (${error.name})，目标页面: ${targetPageForThisRequest}`);
             
-            // 如果页面未切换，需要隐藏加载动画并显示备用数据
+            // 如果页面未切换，需要隐藏加载动画并显示错误
             if (targetPageForThisRequest === CONFIG.currentPage) {
                 CONFIG.isLoading = false;
                 loading.style.display = 'none';
-                
-                // 使用备用数据
-                if (CONFIG.USE_FALLBACK_DATA && CONFIG.FALLBACK_DATA[CONFIG.currentPage]) {
-                    if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 对 ${CONFIG.currentPage} 使用备用数据（请求被中止）`);
-                    renderWikiContent(CONFIG.FALLBACK_DATA[CONFIG.currentPage]);
-                }
+                showError(`请求超时: ${CONFIG.currentPage}`);
             }
             
             return; // 静默退出
@@ -189,15 +180,9 @@ async function loadWikiContent() {
         
         console.error('加载Wiki内容失败:', error);
         
-        // 7. 仅当错误发生在当前仍然活跃的页面上时，才显示错误或备用数据
+        // 7. 仅当错误发生在当前仍然活跃的页面上时，才显示错误
         if (targetPageForThisRequest === CONFIG.currentPage) {
-            if (CONFIG.USE_FALLBACK_DATA && CONFIG.FALLBACK_DATA[CONFIG.currentPage]) {
-                if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 对 ${CONFIG.currentPage} 使用备用数据`);
-                renderWikiContent(CONFIG.FALLBACK_DATA[CONFIG.currentPage]);
-            } else {
-                // 只有当页面未切换，且是真正的网络/服务器错误时，才提示用户
-                showError(`加载失败: ${error.message}`);
-            }
+            showError(`加载失败: ${error.message}`);
         } else {
             if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 错误发生在已切换的旧页面(${targetPageForThisRequest})上，忽略`);
         }
@@ -261,10 +246,9 @@ function renderWikiContent(data) {
     // 移除了之前的 setTimeout 清空代码，因为它会在设置内容后立即清空容器
     
     if (!data || !data.content) {
-        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] data.content 为空，显示默认内容');
-        container.innerHTML = CONFIG.paperMode 
-            ? '<div class="paper"><p>暂无内容，请编辑此页面</p></div>'
-            : '<div class="empty-state"><p>暂无内容，请编辑此页面</p></div>';
+        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] data.content 为空，显示错误');
+        showError(`加载失败: ${CONFIG.currentPage} 页面内容为空`);
+        return;
     } else {
         if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 开始解析Markdown内容');
         

@@ -39,7 +39,7 @@ const CONFIG = {
     DEBUG_MODE: true,
     
     // 备用数据模式 - 当API不可用时使用本地数据
-    USE_FALLBACK_DATA: true,
+    USE_FALLBACK_DATA: false,
     
     // 当前页面
     currentPage: 'home',
