@@ -110,11 +110,13 @@ async function loadWikiContent() {
     
     try {
         const controller = new AbortController();
-        // 3. （可选）将超时时间延长至30秒，为慢速网络留出余地
+        let isTimeout = false;
+        // 3. 超时时间：15秒。冷启动到 api.jsonbin.io 通常 < 3s，超过 15s 几乎可判定为网络问题
         const timeoutId = setTimeout(() => {
-            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 请求超时，中止: ${targetPageForThisRequest}`);
+            isTimeout = true;
+            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 请求超时(15s)，中止: ${targetPageForThisRequest}`);
             controller.abort();
-        }, 30000); // 从 10000 改为 30000 毫秒
+        }, 15000);
         CONFIG.currentRequest = controller;
         
         const response = await fetch(`${CONFIG.JSONBIN_API_URL}/${binId}`, {
@@ -153,9 +155,11 @@ async function loadWikiContent() {
         
         if (data.record) {
             if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 准备调用 renderWikiContent(data.record)');
+            CONFIG.__retriedOnce = false; // 重置重试标记
             renderWikiContent(data.record);
         } else if (data.content) {
             if (CONFIG.DEBUG_MODE) console.log('[DEBUG] data.record不存在，尝试直接使用data');
+            CONFIG.__retriedOnce = false; // 重置重试标记
             renderWikiContent(data);
         } else {
             if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 数据中没有record和content字段');
@@ -165,13 +169,24 @@ async function loadWikiContent() {
     } catch (error) {
         // 6. 区分处理"中止错误"和"其他网络/服务器错误"
         if (error.name === 'AbortError') {
-            // 这是预期内的中止，通常因页面切换或超时导致，无需作为错误提示给用户
-            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 请求被中止 (${error.name})，目标页面: ${targetPageForThisRequest}`);
+            // 这是预期内的中止，通常因页面切换或超时导致
+            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 请求被中止 (${error.name})，目标页面: ${targetPageForThisRequest}, isTimeout: ${isTimeout}`);
             
-            // 如果页面未切换，需要隐藏加载动画并显示错误
-            if (targetPageForThisRequest === CONFIG.currentPage) {
+            // 只有在"当前页面仍是目标页面"且"确实是超时"时才报错
+            // （切换页面导致的 abort 不是错误，新页面会立即接管）
+            if (targetPageForThisRequest === CONFIG.currentPage && isTimeout) {
                 CONFIG.isLoading = false;
                 loading.style.display = 'none';
+                // 冷启动到 jsonbin.io 经常慢，第一次失败后自动重试一次（更短超时）
+                if (!CONFIG.__retriedOnce) {
+                    CONFIG.__retriedOnce = true;
+                    if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 超时后自动重试一次: ${CONFIG.currentPage}`);
+                    loading.style.display = 'block';
+                    loading.innerHTML = `<div class="loading-spinner"></div><p>正在重新连接 ${CONFIG.currentPage}…</p>`;
+                    // 短延迟后重试，让用户感知到
+                    setTimeout(() => { loadWikiContent(); }, 300);
+                    return;
+                }
                 showError(`请求超时: ${CONFIG.currentPage}`);
             }
             
@@ -182,6 +197,15 @@ async function loadWikiContent() {
         
         // 7. 仅当错误发生在当前仍然活跃的页面上时，才显示错误
         if (targetPageForThisRequest === CONFIG.currentPage) {
+            // 网络错误也自动重试一次
+            if (!CONFIG.__retriedOnce) {
+                CONFIG.__retriedOnce = true;
+                if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 网络错误后自动重试一次: ${CONFIG.currentPage}`);
+                loading.style.display = 'block';
+                loading.innerHTML = `<div class="loading-spinner"></div><p>正在重新连接 ${CONFIG.currentPage}…</p>`;
+                setTimeout(() => { loadWikiContent(); }, 300);
+                return;
+            }
             showError(`加载失败: ${error.message}`);
         } else {
             if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 错误发生在已切换的旧页面(${targetPageForThisRequest})上，忽略`);
