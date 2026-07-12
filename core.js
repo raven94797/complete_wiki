@@ -108,12 +108,12 @@ async function loadWikiContent() {
     try {
         const controller = new AbortController();
         let isTimeout = false;
-        // 3. 超时时间：15秒。冷启动到 api.jsonbin.io 通常 < 3s，超过 15s 几乎可判定为网络问题
+        // 3. 超时时间：8秒。jsonbin.io 冷启动通常 2-5s，超过 8s 判定为超时
         const timeoutId = setTimeout(() => {
             isTimeout = true;
-            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 请求超时(15s)，中止: ${targetPageForThisRequest}`);
+            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 请求超时(8s)，中止: ${targetPageForThisRequest}`);
             controller.abort();
-        }, 15000);
+        }, 8000);
         CONFIG.currentRequest = controller;
         
         const response = await fetch(`${CONFIG.JSONBIN_API_URL}/${binId}`, {
