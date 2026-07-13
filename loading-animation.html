@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>松材线虫病主题加载动画 - 测试页</title>
+    <link href="https://fonts.googleapis.com/css2?family=Arima+Madurai:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* 背景装饰 - 年轮纹理 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 800px;
+            border-radius: 50%;
+            background:
+                radial-gradient(circle, transparent 0%, transparent 38%, rgba(46,139,87,0.03) 39%, transparent 40%),
+                radial-gradient(circle, transparent 0%, transparent 48%, rgba(46,139,87,0.04) 49%, transparent 50%),
+                radial-gradient(circle, transparent 0%, transparent 58%, rgba(46,139,87,0.03) 59%, transparent 60%),
+                radial-gradient(circle, transparent 0%, transparent 68%, rgba(46,139,87,0.04) 69%, transparent 70%),
+                radial-gradient(circle, transparent 0%, transparent 78%, rgba(46,139,87,0.03) 79%, transparent 80%),
+                radial-gradient(circle, transparent 0%, transparent 88%, rgba(46,139,87,0.04) 89%, transparent 90%),
+                radial-gradient(circle, transparent 0%, transparent 96%, rgba(46,139,87,0.03) 97%, transparent 98%);
+            pointer-events: none;
+            animation: ring-breathe 6s ease-in-out infinite;
+        }
+        @keyframes ring-breathe {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+        }
+
+        /* ========== 主加载动画容器 ========== */
+        .pine-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 外层显微镜光圈 */
+        .microscope-ring {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 2px solid rgba(46, 139, 87, 0.2);
+            animation: microscope-pulse 2.5s ease-in-out infinite;
+        }
+        .microscope-ring-inner {
+            position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border-radius: 50%;
+            border: 1.5px dashed rgba(46, 139, 87, 0.25);
+            animation: microscope-rotate 10s linear infinite;
+        }
+        /* 第二个光圈 - 外层 */
+        .microscope-ring-outer {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            border: 1px solid rgba(205, 133, 63, 0.12);
+            animation: microscope-pulse 3s ease-in-out infinite reverse;
+        }
+
+        @keyframes microscope-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+        @keyframes microscope-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* DNA双螺旋 + 松树容器 */
+        .pine-dna-container {
+            position: relative;
+            width: 140px;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+
+        /* DNA链 */
+        .dna-helix-left, .dna-helix-right {
+            position: absolute;
+            width: 30px;
+            height: 160px;
+        }
+        .dna-helix-left {
+            left: 0;
+            color: #2e8b57;
+            animation: dna-wave-left 3s ease-in-out infinite;
+        }
+        .dna-helix-right {
+            right: 0;
+            color: #3cb371;
+            animation: dna-wave-right 3s ease-in-out infinite;
+        }
+        .dna-strand { width: 100%; height: 100%; }
+        .dna-path { opacity: 0.6; }
+        .dna-dot { fill: currentColor; opacity: 0; }
+        .d1 { animation: dot-blink 1.8s 0.0s infinite; }
+        .d2 { animation: dot-blink 1.8s 0.3s infinite; }
+        .d3 { animation: dot-blink 1.8s 0.6s infinite; }
+        .d4 { animation: dot-blink 1.8s 0.9s infinite; }
+        .d5 { animation: dot-blink 1.8s 1.2s infinite; }
+        .base-pair {
+            stroke: rgba(205, 133, 63, 0.6);
+            stroke-width: 1.5;
+            animation: base-blink 1.8s infinite;
+        }
+        .b1 { animation-delay: 0.15s; }
+        .b2 { animation-delay: 0.45s; }
+        .b3 { animation-delay: 0.75s; }
+        .b4 { animation-delay: 1.05s; }
+
+        @keyframes dna-wave-left {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes dna-wave-right {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(8px); }
+        }
+        @keyframes dot-blink {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        @keyframes base-blink {
+            0%, 100% { opacity: 0.15; }
+            50% { opacity: 0.8; }
+        }
+
+        /* 松树剪影 */
+        .pine-tree {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+        }
+        .pine-crown {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .pine-layer {
+            background: linear-gradient(180deg, #228b22 0%, #2e8b57 100%);
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+            animation: pine-grow 4s ease-in-out infinite;
+        }
+        .pine-layer.p1 {
+            width: 80px; height: 50px;
+            margin-bottom: -8px;
+            animation-delay: 0s;
+        }
+        .pine-layer.p2 {
+            width: 100px; height: 55px;
+            margin-bottom: -8px;
+            animation-delay: 0.4s;
+        }
+        .pine-layer.p3 {
+            width: 120px; height: 60px;
+            animation-delay: 0.8s;
+        }
+        .pine-trunk {
+            width: 12px;
+            height: 35px;
+            background: linear-gradient(180deg, #8b6914, #6b4f12);
+            border-radius: 2px;
+        }
+        @keyframes pine-grow {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.06); }
+        }
+
+        /* 松针飘落粒子 */
+        .pine-needles {
+            position: absolute;
+            width: 240px;
+            height: 240px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .needle {
+            position: absolute;
+            font-size: 16px;
+            color: #6b8e23;
+            opacity: 0;
+            animation: needle-fall linear infinite;
+        }
+        .n1  { left: 15%;  animation-duration: 3.5s; animation-delay: 0.0s; }
+        .n2  { left: 65%;  animation-duration: 4.0s; animation-delay: 0.5s; }
+        .n3  { left: 35%;  animation-duration: 3.2s; animation-delay: 1.0s; }
+        .n4  { left: 80%;  animation-duration: 4.5s; animation-delay: 0.3s; }
+        .n5  { left: 8%;   animation-duration: 3.8s; animation-delay: 1.5s; }
+        .n6  { left: 50%;  animation-duration: 4.2s; animation-delay: 0.8s; }
+        .n7  { left: 28%;  animation-duration: 3.6s; animation-delay: 1.8s; }
+        .n8  { left: 72%;  animation-duration: 4.8s; animation-delay: 0.2s; }
+        .n9  { left: 45%;  animation-duration: 3.9s; animation-delay: 2.0s; }
+        .n10 { left: 90%;  animation-duration: 4.1s; animation-delay: 1.2s; }
+        .n11 { left: 55%;  animation-duration: 3.3s; animation-delay: 0.7s; }
+        .n12 { left: 12%;  animation-duration: 4.6s; animation-delay: 1.6s; }
+
+        @keyframes needle-fall {
+            0%   { transform: translateY(-30px) rotate(0deg); opacity: 0; }
+            10%  { opacity: 0.7; }
+            85%  { opacity: 0.25; }
+            100% { transform: translateY(200px) rotate(480deg); opacity: 0; }
+        }
+
+        /* 加载文字 */
+        .pine-loading-text {
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            z-index: 3;
+        }
+        .loading-text-main {
+            font-family: 'Arima Madurai', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2e8b57;
+            letter-spacing: 0.06em;
+        }
+        .loading-text-dots .dot {
+            color: #cd853f;
+            font-weight: bold;
+            font-size: 1.2rem;
+            animation: dot-hop 1.4s infinite;
+        }
+        .loading-text-dots .dot:nth-child(1) { animation-delay: 0.0s; }
+        .loading-text-dots .dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading-text-dots .dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes dot-hop {
+            0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
+            40% { opacity: 1; transform: translateY(-5px); }
+        }
+        .loading-text-sub {
+            font-size: 0.8rem;
+            color: #cd853f;
+            opacity: 0.5;
+            font-style: italic;
+            letter-spacing: 0.1em;
+        }
+
+        /* 控制面板 */
+        .controls {
+            position: fixed;
+            bottom: 40px;
+            display: flex;
+            gap: 16px;
+            z-index: 10;
+        }
+        .controls button {
+            padding: 10px 24px;
+            border: 1px solid rgba(46, 139, 87, 0.4);
+            background: rgba(46, 139, 87, 0.1);
+            color: #2e8b57;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        .controls button:hover {
+            background: rgba(46, 139, 87, 0.2);
+            border-color: rgba(46, 139, 87, 0.7);
+        }
+        .controls button.active {
+            background: rgba(46, 139, 87, 0.3);
+            border-color: #2e8b57;
+            color: #fff;
+        }
+
+        .info {
+            position: fixed;
+            top: 30px;
+            text-align: center;
+            z-index: 10;
+        }
+        .info h1 {
+            font-family: 'Arima Madurai', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #cd853f;
+            margin-bottom: 4px;
+        }
+        .info p {
+            font-size: 0.85rem;
+            color: #666;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h1>Pine Wilt Disease</h1>
+        <p>松材线虫病 · 合成生物学 · 加载动画预览</p>
+    </div>
+
+    <!-- 加载动画 -->
+    <div class="pine-loading" id="pineLoading">
+        <!-- 外层显微镜光圈 -->
+        <div class="microscope-ring-outer"></div>
+        <div class="microscope-ring">
+            <div class="microscope-ring-inner"></div>
+        </div>
+
+        <!-- DNA双螺旋缠绕松树 -->
+        <div class="pine-dna-container">
+            <!-- 左侧DNA链 -->
+            <div class="dna-helix-left">
+                <svg viewBox="0 0 30 160" class="dna-strand">
+                    <path class="dna-path" d="M15,0 C-15,40 45,80 15,120 C-15,160 45,200 15,240"
+                          fill="none" stroke="currentColor" stroke-width="2.5"/>
+                    <circle class="dna-dot d1" cx="15" cy="0" r="3.5"/>
+                    <circle class="dna-dot d2" cx="15" cy="40" r="3.5"/>
+                    <circle class="dna-dot d3" cx="15" cy="80" r="3.5"/>
+                    <circle class="dna-dot d4" cx="15" cy="120" r="3.5"/>
+                    <circle class="dna-dot d5" cx="15" cy="160" r="3.5"/>
+                    <line class="base-pair b1" x1="15" y1="20" x2="45" y2="20"/>
+                    <line class="base-pair b2" x1="15" y1="60" x2="-15" y2="60"/>
+                    <line class="base-pair b3" x1="15" y1="100" x2="45" y2="100"/>
+                    <line class="base-pair b4" x1="15" y1="140" x2="-15" y2="140"/>
+                </svg>
+            </div>
+
+            <!-- 松树剪影 -->
+            <div class="pine-tree">
+                <div class="pine-crown">
+                    <div class="pine-layer p1"></div>
+                    <div class="pine-layer p2"></div>
+                    <div class="pine-layer p3"></div>
+                </div>
+                <div class="pine-trunk"></div>
+            </div>
+
+            <!-- 右侧DNA链 -->
+            <div class="dna-helix-right">
+                <svg viewBox="0 0 30 160" class="dna-strand">
+                    <path class="dna-path" d="M15,0 C45,40 -15,80 15,120 C45,160 -15,200 15,240"
+                          fill="none" stroke="currentColor" stroke-width="2.5"/>
+                    <circle class="dna-dot d1" cx="15" cy="0" r="3.5"/>
+                    <circle class="dna-dot d2" cx="15" cy="40" r="3.5"/>
+                    <circle class="dna-dot d3" cx="15" cy="80" r="3.5"/>
+                    <circle class="dna-dot d4" cx="15" cy="120" r="3.5"/>
+                    <circle class="dna-dot d5" cx="15" cy="160" r="3.5"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 松针粒子 -->
+        <div class="pine-needles">
+            <span class="needle n1">—</span>
+            <span class="needle n2">—</span>
+            <span class="needle n3">—</span>
+            <span class="needle n4">\</span>
+            <span class="needle n5">/</span>
+            <span class="needle n6">—</span>
+            <span class="needle n7">\</span>
+            <span class="needle n8">/</span>
+            <span class="needle n9">—</span>
+            <span class="needle n10">\</span>
+            <span class="needle n11">/</span>
+            <span class="needle n12">—</span>
+        </div>
+
+        <!-- 加载文字 -->
+        <div class="pine-loading-text">
+            <span class="loading-text-main" id="loadingMsg">正在加载内容</span>
+            <span class="loading-text-dots">
+                <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+            </span>
+            <span class="loading-text-sub">Pine Wilt Disease · 合成生物学</span>
+        </div>
+    </div>
+
+    <!-- 控制面板 -->
+    <div class="controls">
+        <button class="active" onclick="switchMode('loading')">加载中</button>
+        <button onclick="switchMode('error')">加载失败</button>
+        <button onclick="switchMode('success')">加载成功</button>
+    </div>
+
+    <script>
+        function switchMode(mode) {
+            // 更新按钮状态
+            document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const msg = document.getElementById('loadingMsg');
+            const loading = document.getElementById('pineLoading');
+
+            switch(mode) {
+                case 'loading':
+                    msg.textContent = '正在加载内容';
+                    loading.style.display = 'flex';
+                    loading.style.opacity = '1';
+                    break;
+                case 'error':
+                    msg.textContent = '加载失败，点击重试';
+                    loading.style.opacity = '0.5';
+                    break;
+                case 'success':
+                    msg.textContent = '加载完成 ✓';
+                    // 模拟淡出
+                    loading.style.transition = 'opacity 0.5s ease';
+                    loading.style.opacity = '0';
+                    setTimeout(() => {
+                        loading.style.display = 'none';
+                    }, 500);
+                    break;
+            }
+        }
+
+        // 页面加载后默认显示加载状态
+        console.log('松材线虫病主题加载动画 - 测试页');
+        console.log('使用底部按钮切换不同状态预览');
+    </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 /**
- * 核心功能模块 - 应用初始化、导航、内容加载和渲染
+ * Core module - App init, navigation, content loading and rendering
  */
 
 function initApp() {
@@ -18,7 +18,6 @@ function initNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
     const hash = window.location.hash.substring(1) || 'home';
     
-    // 设置初始页面状态
     CONFIG.requestedPage = hash;
     CONFIG.currentPage = hash;
     
@@ -57,168 +56,132 @@ function initNavigation() {
 }
 
 async function loadWikiContent() {
-    // 1. 在开始新请求前，主动中止任何可能存在的旧请求
+    // FIX: Force reset to prevent deadlock on fast page switching
+    CONFIG.isLoading = false;
+    
+    // Abort old request
     if (CONFIG.currentRequest) {
         CONFIG.currentRequest.abort();
         CONFIG.currentRequest = null;
-        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 已中止之前的请求');
-    }
-
-    if (CONFIG.isLoading) {
-        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 已有加载请求在进行中，跳过');
-        return;
+        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] Aborted previous request');
     }
     
     const binId = CONFIG.BIN_IDS[CONFIG.currentPage];
-    
     const container = document.getElementById('wikiContent');
     const loading = document.getElementById('contentLoading');
     
     if (!container || !loading) {
-        console.error('无法找到 wikiContent 或 contentLoading 元素');
+        console.error('Cannot find wikiContent or contentLoading element');
         return;
     }
     
     if (CONFIG.currentPage === 'home') {
         loading.style.display = 'none';
-        showError('Home页面需要从JSONBin加载数据，但当前未配置');
+        showError('Home page needs JSONBin data, not configured');
         return;
     }
     
     if (!binId) {
-        showError('未找到该页面的配置信息');
+        showError('Page config not found');
         return;
     }
     
     container.innerHTML = '';
     container.style.display = 'none';
-    
     loading.style.display = 'block';
-    loading.innerHTML = `<div class="simple-loading">正在加载 ${CONFIG.currentPage}...</div>`;
+    loading.innerHTML = `<div class="simple-loading">Loading ${CONFIG.currentPage}...</div>`;
     
     CONFIG.isLoading = true;
-    
-    // 2. 使用一个局部变量记录本次请求的目标页面，避免闭包问题
     const targetPageForThisRequest = CONFIG.currentPage;
     
     if (CONFIG.DEBUG_MODE) {
-        console.log(`[DEBUG] 开始加载页面: ${targetPageForThisRequest}, BIN_ID: ${binId}`);
+        console.log(`[DEBUG] Loading page: ${targetPageForThisRequest}, BIN_ID: ${binId}`);
     }
     
     try {
         const controller = new AbortController();
-        let isTimeout = false;
-        // 3. 超时时间：8秒。jsonbin.io 冷启动通常 2-5s，超过 8s 判定为超时
-        const timeoutId = setTimeout(() => {
-            isTimeout = true;
-            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 请求超时(8s)，中止: ${targetPageForThisRequest}`);
-            controller.abort();
-        }, 8000);
         CONFIG.currentRequest = controller;
         
+        // 5s timeout, fail fast let user retry
+        const timeoutId = setTimeout(() => {
+            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] Request timeout(5s), abort: ${targetPageForThisRequest}`);
+            controller.abort();
+        }, 5000);
+        
         const response = await fetch(`${CONFIG.JSONBIN_API_URL}/${binId}`, {
-            headers: {
-                'X-Master-Key': CONFIG.JSONBIN_MASTER_KEY
-            },
+            headers: { 'X-Master-Key': CONFIG.JSONBIN_MASTER_KEY },
             signal: controller.signal
         });
         
         clearTimeout(timeoutId);
         
-        // 4. 在关键节点严格检查：当前页面是否仍是发起请求时的目标页面
         if (targetPageForThisRequest !== CONFIG.currentPage) {
-            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 页面已从 ${targetPageForThisRequest} 切换至 ${CONFIG.currentPage}，忽略本响应`);
-            return; // 静默退出，不渲染，不报错
+            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] Page switched, ignore response`);
+            return;
         }
         
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: 加载失败`);
+            throw new Error(`HTTP ${response.status}: Load failed`);
         }
         
         const data = await response.json();
         
-        // 5. 再次验证
         if (targetPageForThisRequest !== CONFIG.currentPage) {
-            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 页面在数据处理前已切换，忽略数据`);
+            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] Page switched, ignore data`);
             return;
         }
         
-        if (CONFIG.DEBUG_MODE) {
-            console.log('[DEBUG] API响应成功');
-            console.log('[DEBUG] data类型:', typeof data);
-            console.log('[DEBUG] data有record:', 'record' in data);
-            console.log('[DEBUG] data有content:', 'content' in data);
-        }
-        
         if (data.record) {
-            if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 准备调用 renderWikiContent(data.record)');
             renderWikiContent(data.record);
         } else if (data.content) {
-            if (CONFIG.DEBUG_MODE) console.log('[DEBUG] data.record不存在，尝试直接使用data');
             renderWikiContent(data);
         } else {
-            if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 数据中没有record和content字段');
-            showError(`API返回的数据格式不正确: ${CONFIG.currentPage}`);
+            showError(`API data format error: ${CONFIG.currentPage}`);
         }
         
     } catch (error) {
-        // 6. 区分处理"中止错误"和"其他网络/服务器错误"
-        if (error.name === 'AbortError') {
-            // 这是预期内的中止，通常因页面切换或超时导致
-            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 请求被中止 (${error.name})，目标页面: ${targetPageForThisRequest}, isTimeout: ${isTimeout}`);
-            
-            // 只有在"当前页面仍是目标页面"且"确实是超时"时才报错
-            // （切换页面导致的 abort 不是错误，新页面会立即接管）
-            if (targetPageForThisRequest === CONFIG.currentPage && isTimeout) {
-                CONFIG.isLoading = false;
-                loading.style.display = 'none';
-                showError(`请求超时: ${CONFIG.currentPage}`);
-            }
-            
-            return; // 静默退出
+        // Page switch abort -> silent ignore
+        if (error.name === 'AbortError' && targetPageForThisRequest !== CONFIG.currentPage) {
+            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] Page switch abort, ignore`);
+            return;
         }
         
-        console.error('加载Wiki内容失败:', error);
+        console.error('Load Wiki content failed:', error);
         
-        // 7. 仅当错误发生在当前仍然活跃的页面上时，才显示错误
         if (targetPageForThisRequest === CONFIG.currentPage) {
-            showError(`加载失败: ${error.message}`);
-        } else {
-            if (CONFIG.DEBUG_MODE) console.log(`[DEBUG] 错误发生在已切换的旧页面(${targetPageForThisRequest})上，忽略`);
+            CONFIG.isLoading = false;
+            loading.style.display = 'none';
+            const msg = error.name === 'AbortError' ? 'Request timeout' : error.message;
+            showError(`Load failed: ${msg} - Click to retry`);
         }
     } finally {
-        // 8. 清理：仅当此finally块属于当前最新请求时才重置状态
         if (CONFIG.currentPage === targetPageForThisRequest) {
             CONFIG.isLoading = false;
         }
-        // 注意：不要在此处将 CONFIG.currentRequest 设为 null，因为可能已被新的请求覆盖
-        // 更安全的做法是，在上面 abort 旧请求后立即设为 null，或由新的请求流程覆盖
     }
 }
 
 function renderWikiContent(data) {
     if (CONFIG.DEBUG_MODE) {
-        console.log('[DEBUG] 开始渲染内容');
+        console.log('[DEBUG] Rendering content');
         console.log('[DEBUG] requestedPage:', CONFIG.requestedPage);
         console.log('[DEBUG] currentPage:', CONFIG.currentPage);
-        console.log('[DEBUG] 数据:', data);
+        console.log('[DEBUG] data:', data);
     }
     
     CONFIG.currentPageData = data;
-    
-    // 保存原始Markdown内容用于编辑
     CONFIG.rawContent = data ? (data.markdown || '') : '';
     
     const container = document.getElementById('wikiContent');
     const loading = document.getElementById('contentLoading');
     
     if (!container || !loading) {
-        console.error('无法找到 wikiContent 或 contentLoading 元素');
+        console.error('Cannot find wikiContent or contentLoading element');
         return;
     }
     
     if (CONFIG.requestedPage && CONFIG.requestedPage !== CONFIG.currentPage) {
-        console.warn(`数据不匹配: 请求的是 ${CONFIG.requestedPage}, 收到的是 ${CONFIG.currentPage}`);
+        console.warn(`Data mismatch: requested ${CONFIG.requestedPage}, got ${CONFIG.currentPage}`);
         return;
     }
     
@@ -233,35 +196,32 @@ function renderWikiContent(data) {
     }
     
     if (CONFIG.DEBUG_MODE) {
-        console.log('[DEBUG] container 元素:', container);
-        console.log('[DEBUG] loading 元素:', loading);
-        console.log('[DEBUG] data.content 存在:', !!data.content);
-        console.log('[DEBUG] data.content 值:', data.content ? data.content.substring(0, 100) + '...' : 'undefined');
+        console.log('[DEBUG] container element:', container);
+        console.log('[DEBUG] loading element:', loading);
+        console.log('[DEBUG] data.content exists:', !!data.content);
+        console.log('[DEBUG] data.content value:', data.content ? data.content.substring(0, 100) + '...' : 'undefined');
     }
     
     while (container.firstChild) {
         container.removeChild(container.firstChild);
     }
     
-    // 移除了之前的 setTimeout 清空代码，因为它会在设置内容后立即清空容器
-    
     if (!data || !data.content) {
-        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] data.content 为空，显示错误');
-        showError(`加载失败: ${CONFIG.currentPage} 页面内容为空`);
+        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] data.content empty, show error');
+        showError(`Load failed: ${CONFIG.currentPage} page content empty`);
         return;
     } else {
-        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 开始解析Markdown内容');
+        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] Parsing Markdown');
         
         let htmlContent;
-        // 检查内容是否已经是HTML格式
         if (data.content.includes('<') && data.content.includes('>')) {
-            if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 内容已是HTML格式，直接使用');
+            if (CONFIG.DEBUG_MODE) console.log('[DEBUG] Content is already HTML');
             htmlContent = data.content;
         } else {
             htmlContent = parseMarkdown(data.content);
         }
         
-        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] 最终HTML:', htmlContent.substring(0, 150) + '...');
+        if (CONFIG.DEBUG_MODE) console.log('[DEBUG] Final HTML:', htmlContent.substring(0, 150) + '...');
         
         if (CONFIG.paperMode && !htmlContent.includes('class="paper"')) {
             htmlContent = `<div class="paper" data-page="${CONFIG.currentPage}">${htmlContent}</div>`;
@@ -269,18 +229,15 @@ function renderWikiContent(data) {
         
         container.innerHTML = htmlContent;
         
-        // 根据paperMode设置容器类
         if (CONFIG.paperMode) {
             container.classList.add('paper-mode');
         } else {
             container.classList.remove('paper-mode');
         }
         
-        // 移除强制样式，让CSS类样式生效
         container.style.color = '';
         container.style.background = '';
         
-        // 触发MathJax重新解析LaTeX公式
         if (window.MathJax) {
             MathJax.typeset();
         }
@@ -288,16 +245,16 @@ function renderWikiContent(data) {
         container.style.padding = '';
         
         if (CONFIG.DEBUG_MODE) {
-            console.log('[DEBUG] container.innerHTML 设置完成');
-            console.log('[DEBUG] container内容长度:', container.innerHTML.length);
-            console.log('[DEBUG] 实际内容预览:', container.textContent.substring(0, 100) + '...');
+            console.log('[DEBUG] container.innerHTML set');
+            console.log('[DEBUG] container content length:', container.innerHTML.length);
+            console.log('[DEBUG] content preview:', container.textContent.substring(0, 100) + '...');
         }
         
         container.setAttribute('data-current-page', CONFIG.currentPage);
     }
     
     if (data.title) {
-        document.title = `${data.title} - 北师珠iGEM Wiki`;
+        document.title = `${data.title} - BNUZ iGEM Wiki`;
     }
     
     if (window.MathJax) {
@@ -348,7 +305,7 @@ function enableEditing() {
     const editToolbar = document.getElementById('editToolbar');
     
     if (!contentContainer || !editorContainer || !formatToolbar || !contentEditor) {
-        console.error('无法找到编辑相关的DOM元素');
+        console.error('Cannot find edit-related DOM elements');
         return;
     }
     
@@ -356,7 +313,6 @@ function enableEditing() {
     
     let markdownContent = '';
     
-    // 优先使用保存的原始Markdown内容
     if (CONFIG.rawContent && CONFIG.rawContent.trim()) {
         markdownContent = CONFIG.rawContent;
     } else if (CONFIG.currentPageData && CONFIG.currentPageData.markdown) {
@@ -382,7 +338,7 @@ function enableEditing() {
     if (editContentBtn) editContentBtn.style.display = 'none';
     if (editToolbar) editToolbar.style.display = 'none';
     
-    updateEditStatus('编辑模式已启用');
+    updateEditStatus('Edit mode enabled');
 }
 
 async function saveContent() {
@@ -390,7 +346,7 @@ async function saveContent() {
     const newMarkdown = document.getElementById('contentEditor').value;
     
     if (!binId) {
-        showError('未找到该页面的配置信息');
+        showError('Page config not found');
         return;
     }
     
@@ -406,18 +362,18 @@ async function saveContent() {
         });
         
         if (invalidSyntax.length > 0) {
-            if (!confirm(`发现 ${invalidSyntax.length} 个格式不正确的图片语法。是否继续保存？\n\n不正确的语法：\n${invalidSyntax.join('\n')}`)) {
+            if (!confirm(`Found ${invalidSyntax.length} invalid image syntax. Continue?\n\nInvalid:\n${invalidSyntax.join('\n')}`)) {
                 return;
             }
         }
     }
     
-    if (!confirm('确定要保存修改吗？')) {
+    if (!confirm('Confirm save?')) {
         return;
     }
     
     try {
-        updateEditStatus('正在保存...');
+        updateEditStatus('Saving...');
         
         const getResponse = await fetch(`${CONFIG.JSONBIN_API_URL}/${binId}`, {
             headers: {
@@ -427,7 +383,7 @@ async function saveContent() {
         });
         
         if (!getResponse.ok) {
-            throw new Error(`HTTP ${getResponse.status}: 获取数据失败`);
+            throw new Error(`HTTP ${getResponse.status}: Get data failed`);
         }
         
         const currentData = await getResponse.json();
@@ -451,13 +407,13 @@ async function saveContent() {
         });
         
         if (!putResponse.ok) {
-            throw new Error(`HTTP ${putResponse.status}: 保存失败`);
+            throw new Error(`HTTP ${putResponse.status}: Save failed`);
         }
         
         renderWikiContent(updatedData);
         
         cancelEditing();
-        updateEditStatus('保存成功！');
+        updateEditStatus('Save success!');
         
         if (currentData.features && currentData.features.timeline) {
             loadTimeline();
@@ -467,8 +423,8 @@ async function saveContent() {
         }
         
     } catch (error) {
-        console.error('保存内容失败:', error);
-        showError(`保存失败: ${error.message}`);
+        console.error('Save failed:', error);
+        showError(`Save failed: ${error.message}`);
     }
 }
 
@@ -510,38 +466,38 @@ function applyFormat(format) {
     
     switch(format) {
         case 'h2':
-            formattedText = `# ${selectedText || '标题'}`;
+            formattedText = `# ${selectedText || 'Title'}`;
             break;
         case 'h3':
-            formattedText = `## ${selectedText || '子标题'}`;
+            formattedText = `## ${selectedText || 'Subtitle'}`;
             break;
         case 'h4':
-            formattedText = `### ${selectedText || '小标题'}`;
+            formattedText = `### ${selectedText || 'Small title'}`;
             break;
         case 'h5':
-            formattedText = `#### ${selectedText || '小小标题'}`;
+            formattedText = `#### ${selectedText || 'Smaller title'}`;
             break;
         case 'h6':
-            formattedText = `##### ${selectedText || '小小小标题'}`;
+            formattedText = `##### ${selectedText || 'Smallest title'}`;
             break;
         case 'p':
-            formattedText = `${selectedText || '段落内容'}`;
+            formattedText = `${selectedText || 'Paragraph'}`;
             break;
         case 'strong':
-            formattedText = `**${selectedText || '强调文本'}**`;
+            formattedText = `**${selectedText || 'Bold text'}**`;
             break;
         case 'reference':
-            formattedText = `>>> ${selectedText || '引用内容'}`;
+            formattedText = `>>> ${selectedText || 'Quote'}`;
             break;
         case 'img':
-            const imgUrl = prompt('请输入图片URL:');
+            const imgUrl = prompt('Enter image URL:');
             if (imgUrl) {
-                const altText = prompt('请输入图片描述:', '图片描述');
-                formattedText = `![${altText || '图片'}](${imgUrl})`;
+                const altText = prompt('Enter image description:', 'Image');
+                formattedText = `![${altText || 'Image'}](${imgUrl})`;
             }
             break;
         case 'ul':
-            formattedText = `- ${selectedText || '列表项'}`;
+            formattedText = `- ${selectedText || 'List item'}`;
             break;
         case 'latex-inline':
             formattedText = '$' + (selectedText || 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}') + '$';
@@ -589,7 +545,6 @@ function bindEventListeners() {
         });
     }
     
-    // 绑定导出全部数据按钮
     const exportAllBtn = document.getElementById('exportAllBtn');
     if (exportAllBtn) {
         exportAllBtn.addEventListener('click', exportAllData);
@@ -637,7 +592,7 @@ async function exportAllData() {
     
     if (exportBtn) {
         exportBtn.disabled = true;
-        exportBtn.textContent = '正在导出...';
+        exportBtn.textContent = 'Exporting...';
     }
     
     const allData = {};
@@ -659,14 +614,14 @@ async function exportAllData() {
                     const data = await response.json();
                     allData[page] = data;
                     if (CONFIG.DEBUG_MODE) {
-                        console.log(`[DEBUG] 已导出页面: ${page}`);
+                        console.log(`[DEBUG] Exported page: ${page}`);
                     }
                 } else {
-                    console.warn(`[WARN] 导出页面 ${page} 失败: HTTP ${response.status}`);
+                    console.warn(`[WARN] Export page ${page} failed: HTTP ${response.status}`);
                     allData[page] = { error: `HTTP ${response.status}` };
                 }
             } catch (error) {
-                console.warn(`[WARN] 导出页面 ${page} 失败:`, error);
+                console.warn(`[WARN] Export page ${page} failed:`, error);
                 allData[page] = { error: error.message };
             }
         }
@@ -689,18 +644,18 @@ async function exportAllData() {
         URL.revokeObjectURL(url);
         
         if (CONFIG.DEBUG_MODE) {
-            console.log('[DEBUG] 数据导出成功:', exportInfo);
+            console.log('[DEBUG] Export success:', exportInfo);
         }
         
-        alert(`成功导出 ${pages.length} 个页面的数据！`);
+        alert(`Successfully exported ${pages.length} pages!`);
         
     } catch (error) {
-        console.error('导出失败:', error);
-        alert('导出失败: ' + error.message);
+        console.error('Export failed:', error);
+        alert('Export failed: ' + error.message);
     } finally {
         if (exportBtn) {
             exportBtn.disabled = false;
-            exportBtn.textContent = '导出全部数据';
+            exportBtn.textContent = 'Export All Data';
         }
     }
 }
@@ -710,19 +665,22 @@ function showError(message) {
     const loading = document.getElementById('contentLoading');
     
     if (!container) {
-        console.error('无法找到 wikiContent 元素');
+        console.error('Cannot find wikiContent element');
         return;
     }
+    
+    // FIX: Force reset, ensure retry button works
+    CONFIG.isLoading = false;
     
     if (loading) {
         loading.style.display = 'none';
     }
     
     container.innerHTML = `<div class="error-state" style="text-align:center; padding:2rem; color:#e74c3c;">
-        <p style="font-size:1.2rem; margin-bottom:1rem;">⚠️ 加载失败</p>
+        <p style="font-size:1.2rem; margin-bottom:1rem;">Load Failed</p>
         <p>${message}</p>
         <button onclick="loadWikiContent()" style="margin-top:1rem; padding:0.5rem 1.5rem; background:#3498db; color:white; border:none; border-radius:4px; cursor:pointer;">
-            重试
+            Retry
         </button>
     </div>`;
     container.style.display = 'block';
