@@ -627,7 +627,7 @@ async function exportAllData() {
         }
         
         const exportInfo = {
-            exportDate: new Date().toISOString(),
+            _exportDate: new Date().toISOString(),
             version: '1.0.0',
             totalPages: pages.length,
             pages: allData
@@ -637,7 +637,7 @@ async function exportAllData() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `wiki-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = 'json';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
